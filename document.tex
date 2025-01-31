@@ -1,0 +1,59 @@
+\begin{document}
+    % frontpage
+    \pagenumbering{gobble} % no page number
+    
+    \makefrontpage
+        {Cryptographic Access Control for Balancing Trust, Protection, and Performance}            % title
+        {}                                                    % subtitle
+
+    \clearpage
+
+    % acknowledgement
+    % \input{general/acknowledgements}
+    \clearpage
+
+    \pagestyle{plain}
+    \mainmatter
+
+    % index
+    \tableofcontents
+    \clearpage
+
+    % content group
+    \begingroup
+        \renewcommand{\cleardoublepage}{} % no page break between chapters
+        \renewcommand{\clearpage}{} % override clear page commands
+        \titleformat{\chapter}
+            {\normalfont\Huge\bfseries}{\thechapter}{1em}{}
+
+        \titlespacing*{\chapter}{0pt}{0.59in}{0.02in}
+        \titlespacing*{\section}{0pt}{0.20in}{0.02in}
+        \titlespacing*{\subsection}{0pt}{0.10in}{0.02in}
+
+        % include abstract
+        \input{overview/abstract}
+        
+        \glsresetall
+
+        % include content
+        \input{overview/introduction}
+        \input{backgroud/background}
+        \input{hybrid/hybdrid}
+        \input{implementation/implementation}
+        \input{conclusion/conclusion}
+        % \printglossaries % boh
+
+    \endgroup
+
+    % bibliography
+    \bibliographystyle{plain}
+    \bibliography{bibliography}
+    \addcontentsline{toc}{chapter}{Bibliography}
+
+    % appendix
+    \titleformat{\chapter}
+        {\normalfont\Huge\bfseries}{Appendix \thechapter}{1em}{}
+    \appendix
+    \input{appendix/prologcode/code}
+
+\end{document}

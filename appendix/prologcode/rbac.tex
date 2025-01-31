@@ -1,0 +1,119 @@
+\section{\texttt{rbac_spec.pro}}
+\label{app:prologcode.rbac}
+
+\setcode
+\begin{lstlisting}[language=Prolog]
+% dynamic predicates
+
+:- dynamic userC/1.         % user name
+:- dynamic roleC/1.         % role name
+:- dynamic isMemberC/2.     % user, role
+:- dynamic fileC/1.         % file name
+:- dynamic allowC/2.        % role, file
+
+
+% utils 
+
+rbacPrint(TEXT, CONTENT) :-
+    atom_concat("[TRADIT] ", TEXT, O1),
+    atom_concat(O1, "~n", O2),
+    ansi_format([fg(cyan)], O2, CONTENT).
+
+
+% operations
+
+addUserC(USER) :- userC(USER).
+addUserC(USER) :- 
+    \+ userC(USER),
+    assert(userC(USER)),
+    rbacPrint("Create user ~a", [USER]).
+
+
+addRoleC(ROLE) :- roleC(ROLE).
+addRoleC(ROLE) :-
+    \+ roleC(ROLE),
+    assert(roleC(ROLE)),
+    rbacPrint("Create role ~a", [ROLE]).
+
+addResourceC(FILE) :- fileC(FILE).
+addResourceC(FILE) :-
+    \+ fileC(FILE),
+    assert(fileC(FILE)),
+    rbacPrint("Create file ~a", [FILE]).
+
+assignUserToRoleC(USER, ROLE) :- isMemberC(USER, ROLE).
+assignUserToRoleC(USER, ROLE) :-
+    userC(USER), roleC(ROLE),                                   % checks
+    \+ isMemberC(USER, ROLE),                                   % already member
+    assert(isMemberC(USER, ROLE)),
+    rbacPrint("Assign ~a to ~a", [USER, ROLE]).
+
+assignPermissionToRoleC(ROLE, FILE) :- allowC(ROLE, FILE).
+assignPermissionToRoleC(ROLE, FILE) :-
+    roleC(ROLE), fileC(FILE),                                   % checks
+    \+ allowC(ROLE, FILE),                                      % already has permission
+    assert(allowC(ROLE, FILE)),
+    rbacPrint("Assign ~a access to ~a", [FILE, ROLE]).
+
+revokePermissionFromRoleC(ROLE, FILE) :- \+ allowC(ROLE, FILE).
+revokePermissionFromRoleC(ROLE, FILE) :-
+    roleC(ROLE), fileC(FILE),                                   % checks
+    allowC(ROLE, FILE),                                         % permission is assigned
+    retract(allowC(ROLE, FILE)),
+    rbacPrint("Revoke ~a access by ~a", [FILE, ROLE]).
+
+revokeUserFromRoleC(USER, ROLE) :- \+ isMemberC(USER, ROLE).
+revokeUserFromRoleC(USER, ROLE) :-
+    userC(USER), roleC(ROLE),
+    isMemberC(USER, ROLE),
+    retract(isMemberC(USER, ROLE)),
+    rbacPrint("Revoke ~a from ~a", [USER, ROLE]).
+
+deleteResourceC(FILE) :- \+ fileC(FILE).
+deleteResourceC(FILE) :-
+    fileC(FILE),
+
+    % delete associated permissions
+    foreach(
+        allowC(ROLE, FILE),
+        revokePermissionFromRoleC(ROLE, FILE)
+    ),
+
+    % delete allow
+    retract(fileC(FILE)),
+    rbacPrint("Delete resource ~a", [FILE]).
+
+
+deleteRoleC(ROLE) :- \+ roleC(ROLE).
+deleteRoleC(ROLE) :-
+    roleC(ROLE),
+
+    % delete associated permissions
+    foreach(
+        allowC(ROLE, FILE),
+        revokePermissionFromRoleC(ROLE, FILE)
+    ),
+
+    % delete members
+    foreach(
+        isMemberC(USER, ROLE),
+        revokeUserFromRoleC(USER, ROLE)
+    ),
+
+    % delete role
+    retract(roleC(ROLE)),
+    rbacPrint("Revoke role ~a", [ROLE]).
+
+deleteUserC(USER) :- \+ userC(USER).
+deleteUserC(USER) :-
+    userC(USER),
+
+    % delete memberships
+    foreach(
+        isMemberC(USER, ROLE),
+        revokeUserFromRoleC(USER, ROLE)
+    ),
+
+    retract(userC(user)),
+    rbacPrint("Delete user ~a", [USER]).    
+\end{lstlisting}

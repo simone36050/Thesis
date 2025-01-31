@@ -1,0 +1,66 @@
+\section{Analysis of the Cryptographic Computational Overhead}
+\label{sec:implementation.computation}
+
+In this chapter, we calculate the computational overhead resulting from cryptographic operations. The number of cryptographic primitives executed for each state-change rule, and for read and write operations, is calculated. 
+
+The following cryptographic primitives are required:  \( \cgenpub \) and \( \cgensig \) are the operations used to create a key pair for de/encryption and for signing and verification, respectively. \( \cgensym \) is the key generation operation for the symmetric cipher. The encryption operation for symmetric ciphers is \( \cencsym \), and for asymmetric ciphers is \( \cencpub \). Similarly, the decryption operations for symmetric and asymmetric ciphers are \( \cdecsym \) and \( \cdecpub \), respectively. Finally, for digital signatures, signing is represented by the \( \csig \) operation, and verification of cipher data is represented by \( \cverifysig \).
+
+In comparison to the \cac proposed in \cite{cac}, \( \addResourceF \) only requires cryptographic operations if the resource \( \file \) is protected with \gls{cac}. \( \revokeUserFromRoleF \) considers the fact that not all files require re-encryption and the computational cost of eager re-encryption. Similarly, \( \revokePermissionFromRoleF \) also considers files that do not need to be re-encrypted and eager re-encryption. If the file is not protected with \gls{cac}, \( \assignPermissionToRoleF \) does not require cryptographic operations. Additionally, \( \assignPredicateF \) and \( \revokePredicateF \) consider files that require protection with \gls{cac} or no longer require it.
+
+The cost details can be found in \Cref{tab:computation_costs}.
+
+\wraptable{|l|X|}{\label{tab:computation_costs}Computational costs of operations}{
+    \threecolsdel{\textbf{Operation}}
+              {\textbf{Cryptographic operations}}
+              {\textbf{Costs}}
+    \threecolsdel{\( \addUserF \)}
+              {\( \cgenpub + \cgensig \)}
+              {}
+    \threecolsdel{\( \addRoleF \)}
+              {\( \cgenpub + \cgensig + 2 \cdot \cencpub + \csig \)}
+              {}
+    \threecolsdel{\( \addResourceF \)}
+              {If \( \isEncryptionNeededF \) then \( 2 \cdot (\csig + \cverifysig) + \cgensym + \cencpub + \cencsym \)}
+              {}
+    \threecolsdel{\( \deleteResourceF \)}
+              {No cryptographic computation needed}
+              {0}
+    \threecolsdel{\( \assignUserToRoleF \)}
+              {\( 2 \cdot (\cencpub + \cdecpub) + \csig + \cverifysig \)}
+              {}
+    \threecolsdel{\( \revokeUserFromRoleF \)}
+              {It is the sum of:
+                \setlist{nosep,leftmargin=*}
+                \begin{itemize}
+                    \item if \( \isRoleKeyRotationNeededOnRURF \) then \( \cdecpub + \cgenpub + \cgensig + (2 \cdot \lvert \lbrace (-, \role) \in \urassignement \rbrace \rvert) \), else no cryptographic computation needed;
+                    \item \( \cgensym \cdot \lvert \lbrace (\role, \twoang{-}{\file}) \in \frassignement : \file \in \files \land \isReencryptionNeededOnRURF \rbrace \rvert \)
+                    \item \( (\cencpub + \csig + \cverifysig) \cdot \lvert \lbrace (-, \twoang{-}{\file}) \in \frassignement : (\role, \twoang{-}{\file}) \in \frassignement \land \isReencryptionNeededOnRURF \rbrace \rvert \)
+                    \item \( (\cdecsym + \cencsym) \cdot \lvert \lbrace (\role, \file) \in \frassignement : \file \in \files \land \isEagerReencNeededOnRURF \rbrace \rvert \)
+                \end{itemize}
+              }
+              {}
+    \threecolsdel{\( \assignPermissionToRoleF \)}
+              {If not \( \isEncryptionNeededF \) then no cryptographic computation is needed. \newline
+              If \( \exists (\role, \twoang{-}{\file}) \in \frassignement \) then \( \csig + 2 \cdot \cverifysig \), else \( \csig + 2 \cdot \cverifysig + \cencpub + \cdecpub \)}
+              {}
+    \threecolsdel{\( \revokePermissionFromRoleF \)}
+              {If not \( \isEncryptionNeededF \) \( \lor \) not \( \isReencryptionNeededOnRPF \) then no cryptographic computation is needed. \newline
+              If \( \operation = \opwrite \) then \( 2 \cdot (\cverifysig + \csig) \). \newline
+              If \( \isEagerReencNeededOnRPF \) then \( \cgensym + \cdecsym + \cencsym + (\cverifysig + \cencpub + \csig) \cdot \lvert \lbrace (\role', \twoang{\operation}{\file}) \in \frassignement : \role \neq \role' \rbrace \rvert \), else \( \cgensym + (\cverifysig + \cencpub + \csig) \cdot \lvert \lbrace (\role', \twoang{\operation}{\file}) \in \frassignement : \role \neq \role' \rbrace \rvert \)}
+              {}
+    \threecolsdel{\( \readF \)}
+              {\( 3 \cdot \cverifysig + 2 \cdot \cdecpub + \cdecsym \)}
+              {}
+    \threecolsdel{\( \writeF \)}
+              {\( 5 \cdot \cverifysig + 2 \cdot (\cdecpub + \csig) + \cencsym \)}
+              {}
+    \threecolsdel{\makecell[l]{\( \assignPredicateF \) and \\ \( \revokePredicateF \)}}
+              {It is the sum of:
+              \setlist{nosep,leftmargin=*}
+              \begin{itemize}
+                \item \( (2 \cdot (\csig + \cverifysig) + \cgensym + \cencpub + \cencsym) \cdot \lvert \lbrace \file \in \files : \isEncryptionNeededF \textnormal{ is changed to } \mathit{true} \rbrace \rvert \)
+                \item \( (3 \cdot \cverifysig + 2 \cdot \cdecpub + \cdecsym) \cdot \lvert \lbrace \file \in \files : \isEncryptionNeededF \textnormal{ is changed to } \mathit{false} \rbrace \rvert \)
+              \end{itemize}}
+              {}
+}
+

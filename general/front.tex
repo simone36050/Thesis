@@ -1,0 +1,42 @@
+\newcommand{\makefrontpage}[2]{
+
+    \pagestyle{plain}
+
+    \thispagestyle{empty}
+
+    \begin{center}
+
+        % header
+        \begin{figure}[h!]
+            \centerline{\psfig{file=assets/img/marchio_unitrento_colore_it_202002.eps,width=0.6\textwidth}}
+        \end{figure}
+        \vspace{2 cm}
+        \LARGE{Department of Information Engineering and Computer Science\\}
+        \vspace{1 cm} 
+        \Large{Bachelor's Degree in\\Computer Science}
+        \vspace{2 cm} 
+
+        % title
+        \Large\textsc{Final Dissertation\\} 
+        \vspace{1 cm} 
+        \Huge\textsc{#1\\}          % title
+        \Large{\it{#2}}             % subtitle
+        \vspace{2 cm} 
+
+        % authors
+        \begin{tabular*}{\textwidth}{ c @{\extracolsep{\fill}} c }
+            \Large{Supervisor} & \Large{Student}\\
+            \Large{Prof. Silvio Ranise}& \Large{Simone Brunello}\\
+            & \\
+            \Large{Co-supervisors} & \\
+            \Large{Mr. Stefano Berlato} & \\
+            \Large{Dr. Roberto Carbone} & \\
+        \end{tabular*}
+        \vspace{2 cm} 
+
+        % year
+        \Large{Academic year 2022/2023}
+
+    \end{center}
+
+}

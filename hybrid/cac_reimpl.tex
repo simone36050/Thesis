@@ -1,0 +1,184 @@
+\pagelisting{\label{list:cac_reimpl} \gls{cac} scheme \cite{cac} modified}{\ssmall}{p}{
+    \begin{itemize}
+
+        % --- AddUser ---
+        \item \( \addUserFK \)
+        \begin{itemize}
+            \item User \( \user \) generate encryption key pair \( \keyencpairu \leftarrow \genpub \) and signature key pair \( \keysigpairu \leftarrow \gensig \)
+            \item User \( \user \) sends \( \keyencu \), \( \keyveru \) to admin 
+            \item Admin adds \( (\user, \keyencu, \keyveru) \) to USERS
+        \end{itemize}
+
+        % --- deleteUser ---
+        \item \( \deleteUserFK \)
+        \begin{itemize}
+            \item Verifies that there are no tuples \rt{u}{-}{-}{sig} \verification{with \verifysig{\keyver{SU}}{\rts{u}{-}{-}, sig}}
+        \end{itemize}
+
+        % --- addResource ---
+        \item \( \function{addResourceK}(\user, \file) \)
+        \begin{itemize}
+            \item Generate symmetric key \( \keyn \leftarrow \gensym \)
+            \item Send \( \ft{\file.\fname}{1}{\encsym{k}{\file.\fcontent}}{\user}{\sig{u}} \) and \( \pt{SU}{\twoang{\file.\fname}{ \opreadwrite}}{1}{\encpub{\keyenc{SU}}{k}}{u}{\sig{u}} \) to R.M.
+            \item The R.M. receives \( \ft{fn}{1}{c}{u}{sig} \) and \( \pt{SU}{\twoang{fn}{\opreadwrite}}{1}{c'}{u}{sig'} \) \verification{and verifies that the tuple are well-formed and the signatures are valid, i.e., \( \verifysig{\keyveru}{\fts{fn}{1}{c}{u}, sig} \) and \( \verifysig{\keyveru}{\pts{SU}{\twoang{fn}{\opreadwrite}}{1}{c'}{u}, sig'} \)}
+            \item \verification{If verifications is successful, t}\noverification{T}he R.M. adds \( (\file.\fname,1) \) to FILES and stores \( \ft{fn}{1}{c}{u}{sig} \) and \( \pt{SU}{\twoang{fn}{\opreadwrite}}{1}{c'}{u}{sig'} \) 
+        \end{itemize}
+
+        % --- deleteResource ---
+        \item \( \deleteResourceFK \)
+        \begin{itemize}
+            \item Verifies that there are no tuples \pt{-}{\twoang{\file.\fname}{-}}{-}{-}{-}{sig} \verification{with \verifysig{\keyver{SU}}{\pts{-}{\twoang{\file.\fname}{-}}{-}{-}{-}, sig}}
+            \item Remove \( (\file.\fname, v_{\file.\fname}) \) from FILES
+            \item Delete \( \ft{\file.\fname}{-}{-}{-}{-} \)
+        \end{itemize}
+
+        % --- addRole ---
+        \item \( \addRoleFK \)
+        \begin{itemize}
+            \item Generate encryption key pair \( \keyencpairr{1} \leftarrow \genpub \) and \( \keysigpairr{1} \leftarrow \gensig \)
+            \item Add \( (r, 1, \keyencr{1}, \keyverr{1}) \) to ROLES
+            \item Send \( \rt{SU}{(r, 1)}{\encpub{\keyenc{SU}}{\keydecr{1}, \keysigr{1}}}{\sig{SU}} \) to R.M.
+        \end{itemize}
+
+        % --- deleteRole ---
+        \item \( \deleteRoleFK \)
+        \begin{itemize}
+            \item Verifies that there are no tuples \pt{(\role, -)}{-}{-}{-}{-}{sig} \verification{with \verifysig{\keyver{SU}}{\pts{(\role, -)}{-}{-}{-}{-}, sig}}
+            \item Verifies that there are no tuples \rt{-}{(\role, -)}{-}{sig} \verification{with \verifysig{\keyver{SU}}{\rts{-}{(\role, -)}{-}, sig}}
+            \item Remove \( (\role, \rolev, -, -) \) from ROLES
+        \end{itemize}
+
+        % --- assignUserToRole ---
+        \item \( \assignUserToRoleFK \)
+        \begin{itemize}
+            \item Find \( \rt{SU}{(\role, \rolev)}{c}{sig} \) with \( \verifysig{\keyver{SU}}{\rts{SU}{(\role, \rolev)}{c},sig} \)
+            \item Decrypt keys \( (\keydecr{\rolev}, \keysigr{\rolev}) = \decpub{\keydec{SU}}{c} \)
+            \item Send \( \rt{\user}{(\role, \rolev)}{\encpub{\keyencu}{\keydecr{\rolev}, \keysigr{\rolev}}}{\keyveru} \) to R.M.
+        \end{itemize}
+
+        % --- rotateRoleKey ---
+        \item \( \rotateRoleKeyF \)
+        \begin{itemize}
+            \item Generate new role key \( (\keyencr{\rolev+1}, \keydecr{\rolev + 1}) \leftarrow \genpub \) and \( \keysigpairr{\rolev+1} \leftarrow \gensig \)
+            \item For all \( \rt{u}{(\role, \rolev)}{c}{sig} \)\verification{ and \( \verifysig{\keyver{SU}}{\rts{u}{(\role, \rolev)}{c}, sig} \)}:
+            \begin{itemize}
+                \item Send \( \rt{u}{(\role, \rolev+1)}{\encpub{\keyenc{u}}{\keydecr{\rolev+1}, \keysigr{\rolev+1}}}{\sig{SU}} \) to R.M.
+            \end{itemize}
+
+            \item For every \( fn \) such that there exists \( \pt{(\role, \rolev)}{\twoang{fn}{\operation}}{\filev}{c}{SU}{sig} \)\verification{ with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{p}{\filev}{c}{SU}, sig} \)}:
+            \begin{itemize}
+                \item For every \( \pt{(\role, \rolev)}{\twoang{fn}{\operation'}}{v}{c'}{SU}{sig} \)\verification{ with \( \verifysig{\keydec{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\operation'}}{v}{c'}{SU}, sig} \)}:
+                \begin{itemize}
+                    \item Decrypt \( \key{}{} = \decpub{\keydecr{\rolev}}{c'} \)
+                    \item Send \( \pt{(\role, \rolev+1)}{\twoang{fn}{\operation'}}{v}{\encpub{\keyencr{\rolev+1}}{k}}{SU}{\sig{SU}} \) to R.M.
+
+                \end{itemize}
+            \end{itemize}
+
+
+            \item Update \( \role \) in ROLES, i.e., replace \( (\role, \rolev, \keyencr{\rolev}, \keyverr{\rolev}) \) with \( (\role, \rolev + 1, \keydecr{\rolev + 1}, \keyverr{\rolev + 1}) \)
+        \end{itemize}
+
+        % --- prepareReencryption ---
+        \item \( \prepareReencryptionF \)
+        \begin{itemize}
+            \item For every \( \pt{(\role, \rolev)}{p:=\twoang{\file.\fname}{\operation}}{v}{c}{SU}{sig} \)\verification{ with \( \verifysig{\keydec{SU}}{\pts{(\role, \rolev)}{p}{v}{c}{SU}, sig} \)}:
+            \begin{itemize}
+                \item Generate new symmetric key \( \keyn' \leftarrow \gensym \) for \( p \)
+                \item For all \( \pt{id}{\twoang{\file.\fname}{\operation'}}{\filev}{c''}{SU}{sig} \)\verification{ with \( \verifysig{\keyver{SU}}{\pts{id}{\twoang{\file.\fname}{\operation'}}{\filev}{c''}{SU}, sig} \)}:
+                \begin{itemize}
+                    \item Send \( \pt{id}{\twoang{\file.\fname}{\operation}}{\filev+1}{\encpub{id}{k'}}{SU}{\sig{SU}} \)
+                \end{itemize}
+            \end{itemize}
+            \item Increment \( \filev \) in FILES, i.e., set \( \filev := \filev + 1 \)
+        \end{itemize}
+
+    \end{itemize}
+}{
+    \begin{itemize}
+
+        % ---- assignPermissionToRole ---
+        \item \( \assignPermissionToRoleFK \)
+        \begin{itemize}
+            \item For all \( \pt{SU}{\twoang{\file.\fname}{\opreadwrite}}{v}{c}{id}{sig} \)\verification{ with \( \verifysig{\keyver{id}}{\pts{SU}{\twoang{\file.\fname}{\opreadwrite}}{v}{c}{id}, sig} \)}:
+            \begin{itemize}
+                \item If this adds Write permission to existing Read permission, i.e., \( \operation = \opreadwrite \) and there exists \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opread}}{v}{c'}{SU}{sig} \)\verification{ with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\opread}}{v}{c'}{SU}, sig} \)}:
+                \begin{itemize}
+                    \item Send \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opreadwrite}}{v}{c'}{SU}{\sig{SU}} \) to R.M.
+                    \item Delete \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opread}}{v}{c'}{SU}{sig} \)
+                \end{itemize} 
+                \item If the role has no existing permission for the file, i.e., there does no exist \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{op'}}{v}{c'}{SU}{sig} \)\verification{ with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{\file.\fname}{\operation'}}{v}{c}{SU}, sig} \)}:
+                \begin{itemize}
+                    \item Decrypt key \( k = \decpub{\keydec{SU}}{c} \)
+                    \item Send \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\operation}}{v}{\encpub{\keyencr{\rolev}}{k}}{SU}{\sig{SU}} \) to R.M.
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+
+        % --- revokePermissionFromRole ----
+        \item \( \revokePermissionFromRoleFK \)
+        \begin{itemize}
+            \item If \( \operation = \opwrite \):
+            \begin{itemize}
+                \item For all \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opreadwrite}}{v}{c}{SU}{sig} \)\verification{ with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{\file.\fname}{\opreadwrite}}{v}{c}{SU}, sig} \)}:
+                \begin{itemize}
+                    \item Send \( \pt{(role, \rolev)}{\twoang{fn}{\opread}}{v}{c}{SU}{\sig{SU}} \) to R.M.
+                    \item Delete \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}{sig} \)
+                \end{itemize}
+            \end{itemize}
+            \item If \( \operation = \opreadwrite \):
+            \begin{itemize}
+                \item Delete all \( \pt{(\role, -)}{\twoang{fn}{-}}{-}{-}{-}{-} \)
+            \end{itemize}
+        \end{itemize}
+
+        % --- revokeUserFromRole ---
+        \item \( \revokeUserFromRoleFK \)
+        \begin{itemize}
+            \item Delete all \( \rt{-}{( \role, \rolev )}{-}{-} \)
+            \item Delete all \( \pt{( \role, \rolev )}{-}{-}{-}{-}{-} \)
+        \end{itemize}
+
+        % --- read ---
+        \item \( \readF \)
+        \begin{itemize}
+            \item Find \( \ft{fn}{\version}{c}{id}{sig} \)\verification{ with valid ciphertext \( c \) and valid signature \( sig \), i.e., \( \verifysig{\keyver{id}}{\fts{fn}{\version}{c}{id}, sig} \)}
+            \item Find a role \( \role \) such that the following hold:
+            \begin{itemize}
+                \item \( \user \) in role \( \role \), i.e., there exists \( \rt{\user}{(\role, \rolev)}{c'}{sig} \)\verification{ with \( \verifysig{\keyver{SU}}{\rts{\user}{(\role, \rolev)}{c'}, sig} \)}
+                \item \( \role \) has read access to version \( \version \) of \( fn \), i.e., there exists \( \pt{(\role, \rolev)}{\twoang{fn}{\operation}}{v}{c''}{SU}{sig'} \)\verification{ with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\operation}}{v}{c''}{SU}, sig'} \)}
+            \end{itemize}
+            \item Decrypt role key \( \keydecr{\rolev} = \decpub{\keydecu}{c'} \)
+            \item Decrypt file key \( k = \decpub{\keydecr{\rolev}}{c''} \)
+            \item Decrypt file \( \file = \decsym{k}{c} \)
+        \end{itemize}
+        
+        % --- write ---
+        \item \( \writeF \)
+        \begin{itemize}
+            \item Find a role \( \role \) such that the folloing hold:
+            \begin{itemize}
+                \item \( \user \) is in role \( \role \), i.e., there exists \( \rt{\user}{(\role, \rolev)}{c}{sig} \) with \( \verifysig{\keyver{SU}}{\rts{\user}{(\role, \rolev)}{c}, sig} \)
+                \item \( \role \) has write access to the newest version of \( fn \), i.e., there exists \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{\filev}{c'}{SU}{sig'} \) and \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{\filev}{c'}{SU}, sig'} \)
+            \end{itemize}
+            \item Decrypt role key \( \keydecr{\rolev} = \decpub{\keydecu}{c} \)
+            \item Decrypt file key \( k = \decpub{\keydecr{\rolev}}{c'} \)
+            \item Send \( \ft{fn}{\filev}{\encsym{k}{\file.content}}{(\role, \rolev)}{\sig{(\role, \rolev)}} \) to R.M.
+            \item The R.M. receives \( \ft{fn}{v}{c''}{(\role, \rolev)}{sig''} \) and verifies the following:
+            \begin{itemize}
+                \item The tuple is well-formed with \( \version = \filev \)
+                \item The signature is valid, i.e., \( \verifysig{\keyverr{\rolev}}{\fts{fn}{v}{c''}{(\role, \rolev)}, sig''} \)
+                \item \( \role \) has write access to the newest version of \( fn \), i.e., there exists \( \pt{(\role, \rolev)}{\twoang{fn}{\operation}}{\filev}{c'}{SU}{sig} \) and \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\operation}}{\filev}{c'}{SU}, sig'} \)
+            \end{itemize}
+            \item If verification is successful, the R.M. replaces \( \ft{fn}{-}{-}{-}{-} \) with \( \ft{fn}{\filev}{c''}{(\role, \rolev)}{sig''} \)
+        \end{itemize}
+
+
+        % --- ----
+        \item \( \reencryptResourceF \):
+        \begin{itemize}
+            \item \( \file = \readF \)
+            \item \( \writeF \)
+        \end{itemize}
+    \end{itemize}
+}

@@ -1,0 +1,7 @@
+\section{Future Work}
+\label{sec:conclusion:futurework}
+
+Our work can be extended to enhance the expressiveness of the proposed \gls{rbac} model by supporting negative permissions, that is, allowing the overriding of the normal behavior of \gls{rbac} by permitting or prohibiting a specific user from accessing a particular resource. 
+Additionally, we believe it is possible to reduce the number of asymmetric operations in the \gls{cac} scheme we consider in favor of symmetric operations. Moreover, to enhance efficiency, cryptographic operations may be performed only when strictly necessary. For example, the asymmetric keys of a role may be created only if a resource protected with \gls{cac} is associated with that role. 
+Another possible future direction is to further investigate the computational overhead of our hybrid system and compare it with that of the vanilla \gls{cac} scheme --- as proposed in \cite{cac} --- for different sequences of state-change-rules. Additionally, it would be interesting to identify real-world scenarios over which to apply our hybrid system and evaluate the (eventual) performance improvement.
+Finally, we are considering replacing Prolog with more efficient languages or technologies. For example, Datalog --- which focuses on querying data in relational databases --- is based on Prolog but offers better performance in queries with dynamic data, which is precisely the situation of our proposed hybrid scheme. 

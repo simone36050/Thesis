@@ -1,0 +1,11 @@
+\chapter*{Abstract}
+\label{abstract}
+
+\addcontentsline{toc}{chapter}{Abstract} % add to index
+
+Numerous companies are currently migrating (or have already migrated) their technological infrastructure along with their data and their customers' data to the cloud for, e.g., enhanced scalability, greater flexibility, and monetary cost savings. However, it is well-known that outsourcing the storage of (possibly sensitive) data to the cloud poses significant challenges to the confidentiality and integrity of the data themselves. Indeed, cloud-hosted data are exposed to a wide array of threats including external attackers, malicious insiders, and honest-but-curious \glspl{csp}.
+%
+In this context, \gls{cac} --- which consists in enforcing \gls{ac} policies through cryptography --- is the natural solution to regulate data sharing among authorized users (e.g., employees) while securing data and preventing unauthorized access. Nonetheless, the use of \gls{cac} entails the execution of several cryptographic computations (e.g., encryption and decryption computations), especially when considering dynamic \gls{ac} policies requiring frequent distribution and revocation of users' privileges. Consequently, \gls{cac} is typically computationally demanding and may even result to be impractical in some real-world scenarios.
+%
+In this thesis, we propose an extended \gls{rbac} scheme to mitigate the computational overhead of \gls{cac}. Our extended \gls{rbac} scheme allows for expressing high-level \gls{rbac} policies which are automatically compiled into two sub-policies enforced in a hybrid fashion by a (computationally-light) centralized traditional \gls{rbac} enforcement mechanism and a (computationally-demanding) \gls{cac} scheme. The automatic compilation is controlled by a customizable security model defining the levels of trust assumed on, e.g., users and \glspl{csp}, an approach which allows to determine whether the execution of certain cryptographic computations is necessary or superfluous on a case-by-case basis. Moreover, we apply our extended \gls{rbac} scheme to a concrete \gls{cac} scheme and provide a proof-of-concept implementation in the Prolog language. Finally, we provide a practical application of our proof-of-concept implementation on a concrete scenario and analyze the cryptographic computational costs incurred.
+

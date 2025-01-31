@@ -1,0 +1,32 @@
+\definecolor{alazarin}{rgb}{0.90, 0.30, 0.23}
+
+\newcommand{\personnote}[3]{
+    {
+        \small{\bf{
+            \textcolor{black}{$\blacktriangleright$} 
+            \textcolor{black}{\fbox{#1}} 
+            \textcolor{#3}{\em{#2}}
+            \textcolor{black}{$\blacktriangleleft$}}
+        }
+    }
+}
+
+\newcommand{\simonenote}[1]{\personnote{Simone B.}{#1}{alazarin}}
+\newcommand{\simonenoter}[1]{\personnote{Simone B.}{#1}{lightgray}}
+
+\newcommand{\stefanonote}[1]{\personnote{Stefano B.}{#1}{blue}}
+\newcommand{\stefanonoter}[1]{\personnote{Stefano B.}{#1}{lightgray}}
+
+\newcommand{\robertonote}[1]{\personnote{Roberto C.}{#1}{alazarin}}
+\newcommand{\robertonoter}[1]{\personnote{Roberto C.}{#1}{lightgary}}
+
+\newcommand{\stefanoreplace}[2]{\textcolor{blue}{\st{#1}}\textcolor{orange}{#2}}
+
+
+% \newcommand{\simonenote}[1]  {}
+% \newcommand{\simonenoter}[1] {}
+% \newcommand{\stefanonote}[1] {}
+% \newcommand{\stefanonoter}[1]{}
+% \newcommand{\robertonote}[1] {}
+% \newcommand{\robertonoter}[1]{}
+

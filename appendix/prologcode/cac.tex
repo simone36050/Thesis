@@ -1,0 +1,230 @@
+\section{\texttt{cac_spec.pro}}
+\label{app:prologcode.cac}
+
+\setcode
+\begin{lstlisting}[language=Prolog]
+% dynamic predicates
+
+:- dynamic userPublicKey/1.     % user
+:- dynamic rolePublicKey/2.     % role, key_version
+:- dynamic encFile/2.           % file, key_version
+:- dynamic roleKey/3.           % user, role, role_key_version
+:- dynamic fileKey/4.           % role, role_key_version, file, file_key_version
+
+
+% utils
+
+cacTuple(OP, TYPE, TEXT, CONTENT) :-
+    atom_concat("[CRYPTO] ", OP, P1),
+    atom_concat(P1, TYPE, P2),
+    atom_concat(P2, "(", P3),
+    atom_concat(P3, TEXT, P4),
+    atom_concat(P4, ")~n", P5),
+    ansi_format([fg(magenta)], P5, CONTENT).
+    
+
+% operations
+
+% user management
+
+addUserK(USER) :- userPublicKey(USER).
+addUserK(USER) :- 
+    \+ userPublicKey(USER),
+    assert(userPublicKey(USER)),
+    cacTuple("+", "User", "~a", [USER]).
+
+deleteUserK(USER) :- \+ userPublicKey(USER).
+deleteUserK(USER) :- userPublicKey(USER), roleKey(USER, _, _).
+deleteUserK(USER) :-
+    userPublicKey(USER), \+ roleKey(USER, _, _),                        % checks
+    retract(userPublicKey(USER)),
+    cacTuple("-", "User", "~a", [USER]).
+
+% role management
+
+cac_createRoleTuple(ROLE, ROLE_VERSION) :-
+    assert(rolePublicKey(ROLE, ROLE_VERSION)),
+    cacTuple("+", "Role", "~a, ~a", [ROLE, ROLE_VERSION]).
+
+cac_deleteRoleTuple(ROLE, ROLE_VERSION) :-
+    retract(rolePublicKey(ROLE, ROLE_VERSION)),
+    cacTuple("-", "Role", "~a, ~a", [ROLE, ROLE_VERSION]).
+
+addRoleK(ROLE) :- rolePublicKey(ROLE, _).
+addRoleK(ROLE) :-
+    \+ rolePublicKey(ROLE, _),
+    cac_createRoleTuple(ROLE, 1).
+
+deleteRoleK(ROLE) :- \+ rolePublicKey(ROLE, _).
+deleteRoleK(ROLE) :- rolePublicKey(ROLE, _), fileKey(ROLE, _, _, _).
+deleteRoleK(ROLE) :- rolePublicKey(ROLE, _), roleKey(_, ROLE, _).
+deleteRoleK(ROLE) :-
+    rolePublicKey(ROLE, ROLE_VERSION), 
+    \+ fileKey(ROLE, _, _, _), \+ roleKey(_, ROLE, _),
+    cac_deleteRoleTuple(ROLE, ROLE_VERSION).
+
+
+rotateRoleKeyK(ROLE) :- \+ rolePublicKey(ROLE, _).
+rotateRoleKeyK(ROLE) :- 
+    rolePublicKey(ROLE, ROLE_VERSION),
+
+    % new role key
+    sum_list([ROLE_VERSION, 1], NEW_ROLE_VERSION),
+
+    % new role
+    cac_createRoleTuple(ROLE, NEW_ROLE_VERSION),
+
+    % copy members
+    foreach(
+        roleKey(USER, ROLE, ROLE_VERSION),
+        (
+            cac_createUserRoleTuple(USER, ROLE, NEW_ROLE_VERSION),
+            cac_deleteUserRoleTuple(USER, ROLE, ROLE_VERSION)
+        )
+    ),
+
+    % copy permissions
+    foreach(
+        fileKey(ROLE, ROLE_VERSION, FILE, FILE_VERSION),
+        (
+            cac_createPermissionRole(ROLE, NEW_ROLE_VERSION, FILE, FILE_VERSION),
+            cac_deletePermissionRole(ROLE, ROLE_VERSION, FILE, FILE_VERSION)
+        )
+    ),
+
+    % delete old role
+    cac_deleteRoleTuple(ROLE, ROLE_VERSION).
+
+% resource management
+
+cac_createResourceTuple(FILE, FILE_VERSION) :-
+    assert(encFile(FILE, FILE_VERSION)),
+    cacTuple("+", "Resource", "~a, ~a", [FILE, FILE_VERSION]).
+
+cac_deleteResourceTuple(FILE, FILE_VERSION) :-
+    retract(encFile(FILE, FILE_VERSION)),
+    cacTuple("-", "Resource", "~a, ~a", [FILE, FILE_VERSION]).
+
+addResourceK(FILE) :- encFile(FILE, _).
+addResourceK(FILE) :-
+    \+ encFile(FILE, _),
+    cac_createResourceTuple(FILE, 1).
+
+deleteResourceK(FILE) :- \+ encFile(FILE, _).
+deleteResourceK(FILE) :- encFile(FILE, _), fileKey(_, _, FILE, _).
+deleteResourceK(FILE) :-
+    encFile(FILE, _), \+ fileKey(_, _, FILE, _),
+
+    foreach(
+        encFile(FILE, FILE_VERSION),
+        cac_deleteResourceTuple(FILE, FILE_VERSION)
+    ).
+
+prepareReenctyptionResourceR(FILE) :- \+ encFile(FILE, _).
+prepareReenctyptionResourceR(FILE) :-                                       % the file hasn't already reencrypted
+    encFile(FILE, OLD_VERSION), 
+    encFile(FILE, CURRENT_VERSION), 
+    OLD_VERSION < CURRENT_VERSION,                                          % find versions
+
+    sum_list([CURRENT_VERSION, 1], NEW_VERSION),                               % new version key
+
+    % create new version
+    cac_createResourceTuple(FILE, NEW_VERSION),
+
+    % copy permission (and delete current ones)
+    foreach(
+        fileKey(ROLE, ROLE_VERSION, FILE, OLD_VERSION),
+        (
+            cac_createPermissionRole(ROLE, ROLE_VERSION, FILE, NEW_VERSION),
+            cac_deletePermissionRole(ROLE, ROLE_VERSION, FILE, CURRENT_VERSION)
+        )
+    ),
+
+    % delete current version
+    cac_deleteResourceTuple(FILE, CURRENT_VERSION).
+prepareReenctyptionResourceR(FILE) :-                                       % the file has only one version
+    encFile(FILE, CURRENT_VERSION),
+    sum_list([CURRENT_VERSION, 1], NEW_VERSION),                               % new version key
+
+    % create new version
+    cac_createResourceTuple(FILE, NEW_VERSION),
+
+    % copy permission
+    foreach(
+        fileKey(ROLE, ROLE_VERSION, FILE, CURRENT_VERSION),
+        cac_createPermissionRole(ROLE, ROLE_VERSION, FILE, NEW_VERSION)
+    ).
+
+reencryptResourceR(FILE) :- \+ encFile(FILE, _).
+reencryptResourceR(FILE) :- 
+    % checks
+    encFile(FILE, OLD_VERSION),
+    encFile(FILE, NEW_VERSION),
+    OLD_VERSION < NEW_VERSION,
+
+    % delete old permissions
+    foreach(
+        fileKey(ROLE, ROLE_VERSION, FILE, OLD_VERSION),
+        cac_deletePermissionRole(ROLE, ROLE_VERSION, FILE, OLD_VERSION)
+    ),
+
+    % delete old resource
+    cac_deleteResourceTuple(FILE, OLD_VERSION).
+
+% user-role management
+
+cac_createUserRoleTuple(USER, ROLE, ROLE_VERSION) :-
+    assert(roleKey(USER, ROLE, ROLE_VERSION)),
+    cacTuple("+", "UserRole", "~a, ~a, ~a", [USER, ROLE, ROLE_VERSION]).
+
+cac_deleteUserRoleTuple(USER, ROLE, ROLE_VERSION) :-
+    retract(roleKey(USER, ROLE, ROLE_VERSION)),
+    cacTuple("-", "UserRole", "~a, ~a, ~a", [USER, ROLE, ROLE_VERSION]).
+
+assignUserToRoleK(USER, ROLE) :- roleKey(USER, ROLE, _).
+assignUserToRoleK(USER, ROLE) :-
+    userPublicKey(USER), rolePublicKey(ROLE, ROLE_VERSION),                                 % checks
+    \+ roleKey(USER, ROLE, ROLE_VERSION),                                                   % already member
+    cac_createUserRoleTuple(USER, ROLE, ROLE_VERSION).
+
+revokeUserFromRoleK(USER, ROLE) :- \+ roleKey(USER, ROLE, _).
+revokeUserFromRoleK(USER, ROLE) :-
+    userPublicKey(USER), rolePublicKey(ROLE, ROLE_VERSION),                                 % checks
+    roleKey(USER, ROLE, ROLE_VERSION),                                                      % is member
+    cac_deleteUserRoleTuple(USER, ROLE, ROLE_VERSION).
+
+% permission-role management
+
+cac_createPermissionRole(ROLE, ROLE_VERSION, FILE, FILE_VERSION) :-
+    assert(fileKey(ROLE, ROLE_VERSION, FILE, FILE_VERSION)),
+    cacTuple("+", "PermissionRole", "~a, ~a, ~a, ~a", [ROLE, ROLE_VERSION, FILE, FILE_VERSION]).
+
+cac_deletePermissionRole(ROLE, ROLE_VERSION, FILE, FILE_VERSION) :-
+    retract(fileKey(ROLE, ROLE_VERSION, FILE, FILE_VERSION)),
+    cacTuple("-", "PermissionRole", "~a, ~a, ~a, ~a", [ROLE, ROLE_VERSION, FILE, FILE_VERSION]).
+
+assignPermissionToRoleK(ROLE, FILE) :- fileKey(ROLE, _, FILE, _).
+assignPermissionToRoleK(ROLE, FILE) :-
+    rolePublicKey(ROLE, ROLE_VERSION), encFile(FILE, _),                                    % checks
+
+    % assign permission to each file version
+    foreach(
+        encFile(FILE, FILE_VERSION),
+        cac_createPermissionRole(ROLE, ROLE_VERSION, FILE, FILE_VERSION)
+    ).
+
+revokePermissionFromRoleR(ROLE, FILE) :- \+ fileKey(ROLE, _, FILE, _).
+revokePermissionFromRoleR(ROLE, FILE) :- 
+    rolePublicKey(ROLE, _), encFile(FILE, _),                                           % checks
+    fileKey(ROLE, _, FILE, _),                                                          % permission is assigned
+
+    foreach(
+        fileKey(ROLE, ROLE_VERSION, FILE, FILE_VERSION),
+        cac_deletePermissionRole(ROLE, ROLE_VERSION, FILE, FILE_VERSION)
+    ).
+
+% queries
+
+encryptedFileK(FILE) :- 
+    encFile(FILE, _).
+\end{lstlisting}

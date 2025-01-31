@@ -1,0 +1,117 @@
+\section{Practical Demonstration}
+\label{sec:implementation.advanced}
+
+To demonstrate our \erbacwhat's functionality, we execute a sequence of state-change rules \( \scrules \). Our example is based on the security model proposed in \Cref{sec:hybird_istantiation}. The process begins with an initial empty state \( ( \{\} = \users, \{\} = \roles, \{\} = \files, \{\} = \urassignement, \{\} = \frassignement, \{\} = \prassignement) \in \states \).
+
+Between lines 1 and 20, users and roles are created, and users are assigned to roles. Tuples for users are not created at this stage because, for reasons of efficiency, these operations are performed only when actually needed, Between lines 21 and 45, resources are created, and permissions are assigned. Finally, the membership of user \textit{alice} in the \textit{engineers} role is revoked. The file \textit{engineers} will be re-encrypted due to the following conditions being met:
+\begin{itemize}
+	\item the file \textit{engineers} is \( \encN(\mathit{engineers}) \), and consequently is also \( \isEncryptionNeededFile(\mathit{engineers}) \);
+	\item the \gls{csp} is \( \cspNoEnforce(\mathit{engineers}) \);
+	\item exists the user \textit{david} that is \( \collusionprone(\mathit{david}) \) and that \( \canDo(\mathit{david}, \twoang{-}{\mathit{engineers}}) \);
+	\item the user \textit{alice} is \( \eagerN(\mathit{alice}) \), and consequently \textit{engineers} is \( \eagerN(\mathit{engineers}) \).
+\end{itemize}
+
+The computational cost for this example is:
+\begin{itemize}
+	\item \texttt{addUser(alice)}: \( \cgenpub + \cgensig \);
+	\item \texttt{addUser(david)}: \( \cgenpub + \cgensig \);
+	\item \texttt{addUser(bob)}: \( \cgenpub + \cgensig \);
+	\item \texttt{addRole(staff)}: \( \cgenpub + \cgensig + 2 \cdot \cencpub + \csig \);
+	\item \texttt{addRole(engineers)}: \( \cgenpub + \cgensig + 2 \cdot \cencpub + \csig \);
+	\item \texttt{assignUserToRole(alice, staff)}: \( 2 \cdot (\cencpub + \cdecpub) + \csig + \cverifysig \);
+	\item \texttt{assignUserToRole(alice, engineers)}: \( 2 \cdot (\cencpub + \cdecpub) + \csig + \cverifysig \);
+	\item \texttt{assignUserToRole(bob, staff)}: \( 2 \cdot (\cencpub + \cdecpub) + \csig + \cverifysig \);
+	\item \texttt{assignUserToRole(david, staff)}: \( 2 \cdot (\cencpub + \cdecpub) + \csig + \cverifysig \);
+	\item \texttt{assignPredicate(shuttle, enc)}: no cryptographic computation;
+	\item \texttt{assignPredicate(temperature, enc)}: no cryptographic computation;
+	\item \texttt{addResource(shuttle)}: \( 2 \cdot (\csig + \cverifysig) + \cgensym + \cencpub + \cencsym \);
+	\item \texttt{addResource(budget)}: no cryptographic computation;
+	\item \texttt{addResource(temperature)}: \( 2 \cdot (\csig + \cverifysig) + \cgensym + \cencpub + \cencsym \);
+	\item \texttt{assignPermissionToRole(staff, budget)}: no cryptographic computation;
+	\item \texttt{assignPermissionToRole(engineers, shuttle)}: \( \csig + 2 \cdot \cverifysig + \cencpub + \cdecpub \);
+	\item \texttt{assignPermissionToRole(engineers,
+		temperature)}: \( \csig + 2 \cdot \cverifysig + \cencpub + \cdecpub \);
+	\item \texttt{assignPredicate(alice, eager)}: no cryptographic computation;
+	\item \texttt{assignPredicate(shuttle, cspNoEnforce)}: no cryptographic computation;
+	\item \texttt{assignUserToRole(david, engineers)}: \( 2 \cdot (\cencpub + \cdecpub) + \csig + \cverifysig \);
+	\item \texttt{assignPredicate(david, collusionProne)}: no cryptographic computation;
+	\item \texttt{revokeUserFromRole(alice, engineers)}: \( 2 \cdot (\cdecpub + \cgenpub + \cgensig + \cgensym + \cencpub + \csig + \cverifysig + \cdecsym + \cencsym) \).
+\end{itemize}
+
+The computational cost of this example is: \( 7 \cdot \cgensig + 7 \cdot \cgenpub + 4 \cdot \cgensig + 4 \cdot \cencsym + 20 \cdot \cencpub + 2 \cdot \cdecsym + 14 \cdot \cdecpub + 15 \cdot \csig + 15 \cdot \cverifysig \). Using the costs in \Cref{tab:pimitive_costs} and assuming that each file occupies 10MB, the total cost is 2255.453ms.
+
+\pagelistingshort{\label{fig:example_code}The example code}{\small}{b!}{
+	\begin{enumerate}
+		\coderow{addUser(alice)}
+		\coderowlightgreen{[TRADIT] Create user alice}
+		\coderow{addUser(david)}
+		\coderowlightgreen{[TRADIT] Create user david}
+		\coderow{addUser(bob)}
+		\coderowlightgreen{[TRADIT] Create user bob}
+		\coderow{addRole(staff)}
+		\coderowlightgreen{[TRADIT] Create role staff}
+		\coderow{addRole(engineers)}
+		\coderowlightgreen{[TRADIT] Create role engineers}
+		\coderow{assignUserToRole(alice, staff)}
+		\coderowlightgreen{[TRADIT] Assign alice to staff}
+		\coderow{assignUserToRole(alice, engineers)}
+		\coderowlightgreen{[TRADIT] Assign alice to engineers}
+		\coderow{assignUserToRole(bob, staff)}
+		\coderowlightgreen{[TRADIT] Assign bob to staff}
+		\coderow{assignUserToRole(david, staff)}
+		\coderowlightgreen{[TRADIT] Assign david to staff}
+		\coderow{assignPredicate(shuttle, enc)}
+		\coderow{assignPredicate(temperature, enc)}
+		\coderow{addResource(shuttle)}
+		\coderowlightgreen{[TRADIT] Create file shuttle}
+		\coderowpurple{[CRYPTO] +Resource(shuttle, 1)}
+		\coderow{addResource(budget)}
+		\coderowlightgreen{[TRADIT] Create file budget}
+		\coderow{addResource(temperature)}
+		\coderowlightgreen{[TRADIT] Create file temperature}
+		\coderowpurple{[CRYPTO] +Resource(temperature, 1)}
+		\coderow{assignPermissionToRole(staff, budget)}
+		\coderowlightgreen{[TRADIT] Assign budget access to staff}
+		
+	\end{enumerate}
+}{
+	\begin{enumerate}
+		\setcounter{enumi}{28}
+		\coderow{assignPermissionToRole(engineers, shuttle)}
+		\coderowlightgreen{[TRADIT] Assign shuttle access to engineers}
+		\coderowpurple{[CRYPTO] +Role(engineers, 1)}
+		\coderowpurple{[CRYPTO] +PermissionRole(engineers, 1, shuttle, 1)}
+		\coderowpurple{[CRYPTO] +User(alice)}
+		\coderowpurple{[CRYPTO] +UserRole(alice, engineers, 1)}
+		\coderow{assignPermissionToRole(engineers, temperature)}
+		\coderowlightgreen{[TRADIT] Assign temperature access to engineers}
+		\coderowpurple{[CRYPTO] +PermissionRole(engineers, 1, temperature, 1)}
+		\coderow{assignPredicate(alice, eager)}
+		\coderow{assignPredicate(shuttle, cspNoEnforce)}
+		\coderow{assignUserToRole(david, engineers)}
+		\coderowlightgreen{[TRADIT] Assign david to engineers}
+		\coderowpurple{[CRYPTO] +User(david)}
+		\coderowpurple{[CRYPTO] +UserRole(david, engineers, 1)}
+		\coderow{assignPredicate(david, collusionProne)}
+		\coderow{revokeUserFromRole(alice, engineers)}
+		\coderowlightgreen{[TRADIT] Revoke alice from engineers}
+		\coderowpurple{[CRYPTO] -UserRole(alice, engineers, 1)}
+		\coderowpurple{[CRYPTO] +Resource(shuttle, 2)}
+		\coderowpurple{[CRYPTO] +PermissionRole(engineers, 1, shuttle, 2)}
+		\coderowpurple{[CRYPTO] -PermissionRole(engineers, 1, shuttle, 1)}
+		\coderowpurple{[CRYPTO] -Resource(shuttle, 1)}
+	\end{enumerate}
+}
+
+\standardtable{|l|r|}{\label{tab:pimitive_costs}Computational Costs of Cryptographic Primitives}{
+	\twocols{\textbf{Cryptographic Primitive}}
+	{\ \textbf{Cost}}
+	\twocols{\( \cgensym \)}{0.033ms}
+	\twocols{\( \cgenpub \) and \( \cgensig \)}{112.673ms}
+	\twocols{\( \cencsym \)}{11.860ms/MB}
+	\twocols{\( \cencpub \)}{0.417ms}
+	\twocols{\( \cdecsym \)}{16.820ms/MB}
+	\twocols{\( \cdecpub \)}{11.986ms}
+	\twocols{\( \csig \)}{1.656ms}
+	\twocols{\( \cverifysig \)}{0.269ms}
+}

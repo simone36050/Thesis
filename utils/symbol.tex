@@ -1,0 +1,324 @@
+% --- symbol ---
+
+% access control
+
+\newcommand{\states}{\ensuremath{\Gamma}}
+\newcommand{\state}{\ensuremath{\gamma}}
+\newcommand{\queries}{\ensuremath{Q}}
+\newcommand{\scrules}{\ensuremath{\Psi}}
+\newcommand{\scrule}{\ensuremath{\psi}}
+\newcommand{\entailment}{\ensuremath{\vdash}}
+
+
+% rbac
+
+\newcommand{\users}{\ensuremath{U}}
+\newcommand{\user}{\ensuremath{u}}
+
+\newcommand{\roles}{\ensuremath{R}}
+\newcommand{\role}{\ensuremath{r}}
+
+\newcommand{\files}{\ensuremath{F}}
+\newcommand{\file}{\ensuremath{f}}
+
+\newcommand{\predicates}{\ensuremath{P}}
+\newcommand{\predicate}{\ensuremath{p}}
+\newcommand{\actor}{\ensuremath{a}}
+
+\newcommand{\operations}{\ensuremath{\mathit{OP}}}
+\newcommand{\operation}{\ensuremath{\mathit{op}}}
+\newcommand{\opwrite}{\ensuremath{\mathit{write}}}
+\newcommand{\opread}{\ensuremath{\mathit{read}}}
+\newcommand{\opreadwrite}{\ensuremath{\mathit{RW}}}
+
+\newcommand{\urassignement}{\ensuremath{\mathit{UR}}}
+\newcommand{\frassignement}{\ensuremath{\mathit{FR}}}
+\newcommand{\prassignement}{\ensuremath{\mathit{PA}}}
+
+\newcommand{\permissions}{\ensuremath{\mathit{PR}}}
+
+\newcommand{\statete}[6]{\ensuremath{\angular{#1, \allowbreak #2, \allowbreak #3, \allowbreak #4, \allowbreak #5, \allowbreak #6}}}
+
+
+% style
+
+\newcommand{\function}[1]{\ensuremath{\mathtt{#1}}}
+\newcommand{\angular}[1]{\ensuremath{\langle #1 \rangle}}
+\newcommand{\twoang}[2]{\ensuremath{\angular{#1, \allowbreak #2}}}
+\newcommand{\setof}[1]{\ensuremath{\lbrace #1 \rbrace}}
+
+\newcommand{\fquery}[1]{\ensuremath{\textbf{\textit{#1}}}}
+\newcommand{\fsquery}[1]{\ensuremath{\textit{#1}}}
+
+% rbac entailments
+
+\newcommand{\genericQ}[2]{\ensuremath{( #1, #2 )}}
+\newcommand{\genericF}[2]{\ensuremath{#1(#2)}}
+
+\newcommand{\isEncryptionNeededFile}{\ensuremath{\fsquery{isEncryptionNeededFile}}}
+\newcommand{\isEncryptionNeededFileP}{\ensuremath{\file}}
+\newcommand{\isEncryptionNeededFileQ}{\ensuremath{\genericQ{\isEncryptionNeededFile}{\isEncryptionNeededFileP}}}
+\newcommand{\isEncryptionNeededFileF}{\ensuremath{\genericF{\isEncryptionNeededFile}{\isEncryptionNeededFileP}}}
+
+\newcommand{\isEagerReencNeededFile}{\ensuremath{\fsquery{isEagerReencNeededFile}}}
+\newcommand{\isEagerReencNeededFileP}{\ensuremath{\file}}
+\newcommand{\isEagerReencNeededFileQ}{\ensuremath{\genericQ{\isEagerReencNeededFile}{\isEagerReencNeededFileP}}}
+\newcommand{\isEagerReencNeededFileF}{\ensuremath{\genericF{\isEagerReencNeededFile}{\isEagerReencNeededFileP}}}
+
+\newcommand{\canDo}{\ensuremath{\fquery{canDo}}}
+\newcommand{\canDoQ}{\ensuremath{\genericQ{\canDo}{\user, \angular{\operation, \file}}}}
+\newcommand{\canDoF}{\ensuremath{\genericF{\canDo}{\user, \angular{\operation, \file}}}}
+
+\newcommand{\isEncryptionNeeded}{\ensuremath{\fquery{isEncryptionNeeded}}}
+\newcommand{\isEncryptionNeededP}{\ensuremath{\file}}
+\newcommand{\isEncryptionNeededQ}{\ensuremath{\genericQ{\isEncryptionNeeded}{\isEncryptionNeededP}}}
+\newcommand{\isEncryptionNeededF}{\ensuremath{\genericF{\isEncryptionNeeded}{\isEncryptionNeededP}}}
+
+\newcommand{\isReencryptionNeededOnRP}{\ensuremath{\fquery{isReencryptionNeededOnRP}}}
+\newcommand{\isReencryptionNeededOnRPP}{\ensuremath{\role, \angular{\operation, \file}}}
+\newcommand{\isReencryptionNeededOnRPQ}{\ensuremath{\genericQ{\isReencryptionNeededOnRP}{\isReencryptionNeededOnRPP}}}
+\newcommand{\isReencryptionNeededOnRPF}{\ensuremath{\genericF{\isReencryptionNeededOnRP}{\isReencryptionNeededOnRPP}}}
+
+\newcommand{\isEagerReencNeededOnRP}{\ensuremath{\fquery{isEagerReencNeededOnRP}}}
+\newcommand{\isEagerReencNeededOnRPP}{\ensuremath{\role, \angular{\operation, \file}}}
+\newcommand{\isEagerReencNeededOnRPQ}{\ensuremath{\genericQ{\isEagerReencNeededOnRP}{\isEagerReencNeededOnRPP}}}
+\newcommand{\isEagerReencNeededOnRPF}{\ensuremath{\genericF{\isEagerReencNeededOnRP}{\isEagerReencNeededOnRPP}}}
+
+\newcommand{\isRoleKeyRotationNeededOnRUR}{\ensuremath{\fquery{isRoleKeyRotationNeededOnRUR}}}
+\newcommand{\isRoleKeyRotationNeededOnRURP}{\ensuremath{\user, \role}}
+\newcommand{\isRoleKeyRotationNeededOnRURQ}{\ensuremath{\genericQ{\isRoleKeyRotationNeededOnRUR}{\isRoleKeyRotationNeededOnRURP}}}
+\newcommand{\isRoleKeyRotationNeededOnRURF}{\ensuremath{\genericF{\isRoleKeyRotationNeededOnRUR}{\isRoleKeyRotationNeededOnRURP}}}
+
+\newcommand{\isReencryptionNeededOnRUR}{\ensuremath{\fquery{isReencryptionNeededOnRUR}}}
+\newcommand{\isReencryptionNeededOnRURP}{\ensuremath{\user, \role, \file}}
+\newcommand{\isReencryptionNeededOnRURQ}{\ensuremath{\genericQ{\isReencryptionNeededOnRUR}{\isReencryptionNeededOnRURP}}}
+\newcommand{\isReencryptionNeededOnRURF}{\ensuremath{\genericF{\isReencryptionNeededOnRUR}{\isReencryptionNeededOnRURP}}}
+
+\newcommand{\isEagerReencNeededOnRUR}{\ensuremath{\fquery{isEagerReencNeededOnRUR}}}
+\newcommand{\isEagerReencNeededOnRURP}{\ensuremath{\user, \role, \file}}
+\newcommand{\isEagerReencNeededOnRURQ}{\ensuremath{\genericQ{\isEagerReencNeededOnRUR}{\isEagerReencNeededOnRURP}}}
+\newcommand{\isEagerReencNeededOnRURF}{\ensuremath{\genericF{\isEagerReencNeededOnRUR}{\isEagerReencNeededOnRURP}}}
+
+
+% rbac change state rules
+
+\newcommand{\addUser}{\ensuremath{\function{addUser}}}
+\newcommand{\addUserFP}[1]{\ensuremath{\genericF{\addUser#1}{\user}}}
+\newcommand{\addUserF}{\ensuremath{\addUserFP{}}}
+
+\newcommand{\deleteUser}{\ensuremath{\function{deleteUser}}}
+\newcommand{\deleteUserFP}[1]{\ensuremath{\genericF{\deleteUser#1}{\user}}}
+\newcommand{\deleteUserF}{\ensuremath{\deleteUserFP{}}}
+
+\newcommand{\addRole}{\ensuremath{\function{addRole}}}
+\newcommand{\addRoleFP}[1]{\ensuremath{\genericF{\addRole#1}{\role}}}
+\newcommand{\addRoleF}{\ensuremath{\addRoleFP{}}}
+
+
+\newcommand{\deleteRole}{\ensuremath{\function{deleteRole}}}
+\newcommand{\deleteRoleFP}[1]{\ensuremath{\genericF{\deleteRole#1}{\role}}}
+\newcommand{\deleteRoleF}{\ensuremath{\deleteRoleFP{}}}
+
+\newcommand{\addResource}{\ensuremath{\function{addResource}}}
+\newcommand{\addResourceFP}[1]{\ensuremath{\genericF{\addResource#1}{\file}}}
+\newcommand{\addResourceF}{\ensuremath{\addResourceFP{}}}
+
+\newcommand{\deleteResource}{\ensuremath{\function{deleteResource}}}
+\newcommand{\deleteResourceFP}[1]{\ensuremath{\genericF{\deleteResource#1}{\file}}}
+\newcommand{\deleteResourceF}{\ensuremath{\deleteResourceFP{}}}
+
+\newcommand{\assignUserToRole}{\ensuremath{\function{assignUserToRole}}}
+\newcommand{\assignUserToRoleFP}[1]{\ensuremath{\genericF{\assignUserToRole#1}{\user, \role}}}
+\newcommand{\assignUserToRoleF}{\ensuremath{\assignUserToRoleFP{}}}
+
+\newcommand{\revokeUserFromRole}{\ensuremath{\function{revokeUserFromRole}}}
+\newcommand{\revokeUserFromRoleFP}[1]{\ensuremath{\genericF{\revokeUserFromRole#1}{\user, \role}}}
+\newcommand{\revokeUserFromRoleF}{\ensuremath{\revokeUserFromRoleFP{}}}
+
+\newcommand{\assignPermissionToRole}{\ensuremath{\function{assignPermissionToRole}}}
+\newcommand{\assignPermissionToRoleFP}[1]{\ensuremath{\genericF{\assignPermissionToRole#1}{\role, \angular{\operation, \file}}}}
+\newcommand{\assignPermissionToRoleF}{\ensuremath{\assignPermissionToRoleFP{}}}
+
+\newcommand{\revokePermissionFromRole}{\ensuremath{\function{revokePermissionFromRole}}}
+\newcommand{\revokePermissionFromRoleFP}[1]{\ensuremath{\genericF{\revokePermissionFromRole#1}{\role, \angular{\operation, \file}}}}
+\newcommand{\revokePermissionFromRoleF}{\ensuremath{\revokePermissionFromRoleFP{}}}
+
+\newcommand{\assignPredicate}{\ensuremath{\function{assignPredicate}}}
+\newcommand{\assignPredicateF}{\ensuremath{\genericF{\assignPredicate}{\predicate, \actor}}}
+
+\newcommand{\revokePredicate}{\ensuremath{\function{revokePredicate}}}
+\newcommand{\revokePredicateF}{\ensuremath{\genericF{\revokePredicate}{\predicate, \actor}}}
+
+\newcommand{\updateEncryptedFiles}{\ensuremath{\function{updateEncryptedFiles}}}
+\newcommand{\updateEncryptedFilesF}{\ensuremath{\updateEncryptedFiles(files_1, files_2)}}
+
+
+% centralized change state rules
+
+\newcommand{\centprefix}{\ensuremath{\function{C}}}
+
+\newcommand{\addUserFC}{\ensuremath{\addUserFP{\centprefix}}}
+\newcommand{\deleteUserFC}{\ensuremath{\deleteUserFP{\centprefix}}}
+\newcommand{\addRoleFC}{\ensuremath{\addRoleFP{\centprefix}}}
+\newcommand{\deleteRoleFC}{\ensuremath{\deleteRoleFP{\centprefix}}}
+\newcommand{\addResourceFC}{\ensuremath{\addResourceFP{\centprefix}}}
+\newcommand{\deleteResourceFC}{\ensuremath{\deleteResourceFP{\centprefix}}}
+\newcommand{\assignUserToRoleFC}{\ensuremath{\assignUserToRoleFP{\centprefix}}}
+\newcommand{\revokeUserFromRoleFC}{\ensuremath{\revokeUserFromRoleFP{\centprefix}}}
+\newcommand{\assignPermissionToRoleFC}{\ensuremath{\assignPermissionToRoleFP{\centprefix}}}
+\newcommand{\revokePermissionFromRoleFC}{\ensuremath{\revokePermissionFromRoleFP{\centprefix}}}
+
+
+% cac change state rules
+
+\newcommand{\cacprefix}{\ensuremath{\function{K}}}
+
+\newcommand{\addUserFK}{\ensuremath{\addUserFP{\cacprefix}}}
+\newcommand{\deleteUserFK}{\ensuremath{\deleteUserFP{\cacprefix}}}
+\newcommand{\addRoleFK}{\ensuremath{\addRoleFP{\cacprefix}}}
+\newcommand{\deleteRoleFK}{\ensuremath{\deleteRoleFP{\cacprefix}}}
+\newcommand{\addResourceFK}{\ensuremath{\addResourceFP{\cacprefix}}}
+\newcommand{\deleteResourceFK}{\ensuremath{\deleteResourceFP{\cacprefix}}}
+
+\newcommand{\assignUserToRoleFK}{\ensuremath{\assignUserToRoleFP{\cacprefix}}}
+
+\newcommand{\revokeUserFromRoleFK}{\ensuremath{\revokeUserFromRoleFP{\cacprefix}}}
+\newcommand{\assignPermissionToRoleFK}{\ensuremath{\assignPermissionToRoleFP{\cacprefix}}}
+\newcommand{\revokePermissionFromRoleFK}{\ensuremath{\revokePermissionFromRoleFP{\cacprefix}}}
+
+\newcommand{\prepareReencryption}{\ensuremath{\function{prepareReencryption\cacprefix}}}
+\newcommand{\prepareReencryptionF}{\ensuremath{\prepareReencryption(\file)}}
+
+\newcommand{\reencryptResource}{\ensuremath{\function{reencryptResource\cacprefix}}}
+\newcommand{\reencryptResourceF}{\ensuremath{\reencryptResource(\file)}}
+
+\newcommand{\rotateRoleKey}{\ensuremath{\function{rotateRoleKey\cacprefix}}}
+\newcommand{\rotateRoleKeyF}{\ensuremath{\rotateRoleKey(\role)}}
+
+\newcommand{\cacread}{\ensuremath{\function{read}}}
+\newcommand{\readF}{\ensuremath{\cacread(\user, fn)}}
+
+\newcommand{\cacwrite}{\ensuremath{\function{write}}}
+\newcommand{\writeF}{\ensuremath{\cacwrite(\user, \file)}}
+
+
+% cac elements
+
+\newcommand{\tb}[3]{\ensuremath{#1^{#2}_{#3}}}
+\newcommand{\f}[1]{\ensuremath{\function{#1}}}
+
+% - cac primitives
+\newcommand{\genpub}{\ensuremath{\tb{\f{Gen}}{\f{Pub}}{}}}
+\newcommand{\gensig}{\ensuremath{\tb{\f{Gen}}{\f{Sig}}{}}}
+\newcommand{\gensym}{\ensuremath{\tb{\f{Gen}}{\f{Sym}}{}}}
+
+\newcommand{\encsym}[2]{\ensuremath{\tb{\f{Enc}}{\f{Sym}}{#1}(#2)}}
+\newcommand{\decsym}[2]{\ensuremath{\tb{\f{Dec}}{\f{Sym}}{#1}(#2)}}
+\newcommand{\encpub}[2]{\ensuremath{\tb{\f{Enc}}{\f{Pub}}{#1}(#2)}}
+\newcommand{\decpub}[2]{\ensuremath{\tb{\f{Dec}}{\f{Pub}}{#1}(#2)}}
+
+\newcommand{\sig}[1]{\ensuremath{\tb{\f{Sign}}{\f{Sig}}{#1}}}
+
+\newcommand{\verifysig}[2]{\ensuremath{\tb{\f{Ver}}{\f{Sig}}{#1}(\allowbreak #2 \allowbreak) \allowbreak = \allowbreak 1}}
+
+% - cac costs
+\newcommand{\cgenpub}{\ensuremath{\tb{\f{Gen}}{\f{Pub}}{}}}
+\newcommand{\cgensig}{\ensuremath{\tb{\f{Gen}}{\f{Sig}}{}}}
+\newcommand{\cgensym}{\ensuremath{\tb{\f{Gen}}{\f{Sym}}{}}}
+
+\newcommand{\cencsym}{\ensuremath{\tb{\f{Enc}}{\f{Sym}}{}}}
+\newcommand{\cdecsym}{\ensuremath{\tb{\f{Dec}}{\f{Sym}}{}}}
+\newcommand{\cencpub}{\ensuremath{\tb{\f{Enc}}{\f{Pub}}{}}}
+\newcommand{\cdecpub}{\ensuremath{\tb{\f{Dec}}{\f{Pub}}{}}}
+
+\newcommand{\csig}{\ensuremath{\tb{\f{Sign}}{\f{Sig}}{}}}
+
+\newcommand{\cverifysig}{\ensuremath{\tb{\f{Ver}}{\f{Sig}}{}}}
+
+
+% - cac tuples
+\newcommand{\filet}{\ensuremath{\f{F}}}
+\newcommand{\permt}{\ensuremath{\f{FK}}}
+\newcommand{\rolet}{\ensuremath{\f{RK}}}
+
+\newcommand{\ft}[5]{\ensuremath{\angular{\filet, \allowbreak #1, \allowbreak #2, \allowbreak #3, \allowbreak #4\verification{, \allowbreak #5}}}}
+\newcommand{\fts}[4]{\ensuremath{\angular{\filet, \allowbreak #1, \allowbreak #2, \allowbreak #3, \allowbreak #4}}}
+\newcommand{\pt}[6]{\ensuremath{\angular{\permt, \allowbreak #1, \allowbreak #2, \allowbreak #3, \allowbreak #4, \allowbreak #5\verification{, \allowbreak #6}}}}
+\newcommand{\pts}[5]{\ensuremath{\angular{\permt, \allowbreak #1, \allowbreak #2, \allowbreak #3, \allowbreak #4, \allowbreak #5}}}
+\newcommand{\rt}[4]{\ensuremath{\angular{\rolet, \allowbreak #1, \allowbreak #2, \allowbreak #3\verification{, \allowbreak #4}}}}
+\newcommand{\rts}[3]{\ensuremath{\angular{\rolet, \allowbreak #1, \allowbreak #2, \allowbreak #3}}}
+
+
+% cac file
+
+\newcommand{\fcontent}{\ensuremath{\mathit{content}}}
+\newcommand{\fname}{\ensuremath{\mathit{name}}}
+
+\newcommand{\keyn}{\ensuremath{\f{k}}}
+
+
+% - cac other
+\newcommand{\version}{\ensuremath{v}}
+\newcommand{\rolev}{\ensuremath{\version_\role}}
+\newcommand{\filev}{\ensuremath{\version_{fn}}}
+
+
+
+\newcommand{\key}[2]{\ensuremath{\tb{\f{k}}{#1}{#2}}}
+
+\newcommand{\keyenc}[1]{\ensuremath{\key{\f{enc}}{#1}}}
+\newcommand{\keydec}[1]{\ensuremath{\key{\f{dec}}{#1}}}
+
+\newcommand{\keyencu}{\ensuremath{\keyenc{u}}}
+\newcommand{\keydecu}{\ensuremath{\keydec{u}}}
+\newcommand{\keyencpairu}{\ensuremath{(\keyencu, \keydecu)}}
+
+\newcommand{\keyencr}[1]{\ensuremath{\keyenc{(r, #1)}}}
+\newcommand{\keydecr}[1]{\ensuremath{\keydec{(r, #1)}}}
+\newcommand{\keyencpairr}[1]{\ensuremath{(\keyencr{#1}, \keydecr{#1})}}
+
+
+\newcommand{\keyver}[1]{\ensuremath{\key{\f{ver}}{#1}}}
+\newcommand{\keysig}[1]{\ensuremath{\key{\f{sig}}{#1}}}
+
+\newcommand{\keyveru}{\ensuremath{\keyver{u}}}
+\newcommand{\keysigu}{\ensuremath{\keysig{u}}}
+\newcommand{\keysigpairu}{\ensuremath{(\keyveru, \keysigu)}}
+
+\newcommand{\keyverr}[1]{\ensuremath{\keyver{(r, #1)}}}
+\newcommand{\keysigr}[1]{\ensuremath{\keysig{(r, #1)}}}
+\newcommand{\keysigpairr}[1]{\ensuremath{(\keyverr{#1}, \keysigr{#1})}}
+
+% hide show
+
+\newcommand{\verification}[1]{#1}
+\newcommand{\noverification}[1]{}
+
+% \newcommand{\verification}[1]{}
+% \newcommand{\noverification}[1]{#1}
+
+% predicates
+\newcommand{\fpredicate}[1]{\ensuremath{\mathbf{#1}}}
+
+\newcommand{\encN}{\ensuremath{\fpredicate{enc}}}
+\newcommand{\encFu}{\ensuremath{\encN(\user)}}
+\newcommand{\encFr}{\ensuremath{\encN(\role)}}
+\newcommand{\encFf}{\ensuremath{\encN(\file)}}
+
+\newcommand{\eagerN}{\ensuremath{\fpredicate{eager}}}
+\newcommand{\eagerFu}{\ensuremath{\eagerN(\user)}}
+\newcommand{\eagerFr}{\ensuremath{\eagerN(\role)}}
+\newcommand{\eagerFf}{\ensuremath{\eagerN(\file)}}
+
+\newcommand{\collusionprone}{\ensuremath{\fpredicate{colludingProne}}}
+\newcommand{\collusionproneF}{\ensuremath{\collusionprone(\user)}}
+
+\newcommand{\cspNoEnforce}{\ensuremath{\fpredicate{cspNoEnforce}}}
+\newcommand{\cspNoEnforceF}{\ensuremath{\cspNoEnforce(\file)}}
+
+
+% files
+
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\textcode}[1]{\texttt{#1}}
+\newcommand{\inoutstream}[1]{\textit{#1}}

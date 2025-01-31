@@ -1,0 +1,63 @@
+% https://tex.stackexchange.com/questions/279240/float-for-lstlisting
+\newfloat{lstfloat}{htbp}{lop}
+\floatname{lstfloat}{Listing}
+\def\lstfloatautorefname{Listing} % needed for hyperref/auroref
+\Crefname{lstlisting}{listing}{listings}
+
+% \newcounter{listing}[listing]
+% \newenvironment{listing}{}{}
+
+\newcommand{\pagelisting}[5]{
+    % \newgeometry{top=-0.7cm,bottom=-7.5cm,left=-7.5cm,right=10.5cm}
+
+    % \SetSinglespace{-0.5}
+
+    \begin{figure}[#3]
+    \caption{#1}
+    \renewcommand{\labelitemi}{}
+    #2
+    \setlist{nosep,leftmargin=*}
+    \setlist[1]{itemsep=0.8em}
+
+    \begin{framed}
+        \begin{minipage}[t]{.48\textwidth}
+            #4
+        \end{minipage}
+        \begin{minipage}[t]{.48\textwidth}
+            #5
+        \end{minipage}
+    \end{framed}
+    \end{figure}
+
+    \restoregeometry
+}
+
+\newcommand{\pagelistingshort}[5]{
+    % \newgeometry{top=-0.7cm,bottom=-7.5cm,left=-7.5cm,right=10.5cm}
+
+    % \SetSinglespace{-10.5}
+
+    \begin{figure}[#3]
+    \caption{#1}
+    % \renewcommand{\labelitemi}{}
+    #2
+    \setlist{nosep,leftmargin=*}
+    \setlist[1]{itemsep=0.0em}
+
+    \begin{framed}
+        \begin{minipage}[t]{.48\textwidth}
+            #4
+        \end{minipage}
+        \begin{minipage}[t]{.48\textwidth}
+            #5
+        \end{minipage}
+    \end{framed}
+    \end{figure}
+
+    \restoregeometry
+}
+
+\newcommand{\coderow}[1]{\item \texttt{#1}}
+\newcommand{\coderowlightgreen}[1]{\item \textcolor{YellowGreen}{\texttt{#1}}}
+\newcommand{\coderowpurple}[1]{\item \textcolor{Orchid}{\texttt{#1}}}
+

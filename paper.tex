@@ -1,0 +1,59 @@
+% ---- document header ----
+
+% unused epsfig
+\documentclass[epsfig,a4paper,11pt,titlepage,twoside,openany]{book}
+
+
+% ---- packages ----
+
+\usepackage{epsfig}
+\usepackage{plain}
+\usepackage{setspace}
+\usepackage[paperheight=29.7cm,paperwidth=21cm,outer=1.5cm,inner=2.5cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{titlesec}
+\usepackage{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage[utf8x]{inputenc}
+\usepackage{glossaries}
+\usepackage{natbib}
+\usepackage{dirtytalk}
+\usepackage{changepage}
+\usepackage{breqn}
+\usepackage{cleveref}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{framed}
+\usepackage{enumitem}
+\usepackage{subcaption}
+\usepackage{moresize}
+\usepackage{makecell}
+\usepackage{xspace}
+\usepackage{multirow}
+\usepackage{soul}
+\soulregister\cite7
+\soulregister\gls7
+\soulregister\glspl7
+\soulregister\Cref7
+\soulregister\ref7
+
+% ---- utils ----
+
+\singlespacing
+\input{utils/note}
+\input{utils/symbol}
+\input{utils/terminology}
+\input{utils/table}
+\input{utils/listing}
+\input{utils/code}
+\input{glossary}
+\input{general/front}
+
+
+% ---- content ----
+
+\input{document}
+

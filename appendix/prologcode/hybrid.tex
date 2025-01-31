@@ -1,0 +1,227 @@
+\section{\texttt{hybrid_spec.pro}}
+\label{app:prologcode.hybrid}
+
+\setcode
+\begin{lstlisting}[language=Prolog]
+% dynamic predicates
+
+:- dynamic user/1.
+:- dynamic role/1.
+:- dynamic file/1.
+:- dynamic isMember/2.
+:- dynamic allow/2.
+
+
+% import
+
+:- ensure_loaded('cac_spec.pro').
+:- ensure_loaded('rbac_spec.pro').
+:- ensure_loaded('predicates.pro').
+
+
+% utils
+
+encryptFile :-
+    foreach(
+        (
+            isEncryptionNeeded(FILE),
+            \+ encryptedFileK(FILE)
+        ),
+        (
+            addResourceK(FILE),
+            foreach(
+                allow(ROLE, FILE),
+                assignPermissionToRole(ROLE, FILE)
+            )
+        )
+    ).
+
+decryptFile :-
+    foreach(
+        (
+            \+ isEncryptionNeeded(FILE),
+            encryptedFileK(FILE)
+        ),
+        (
+            foreach(
+                allow(ROLE, FILE),
+                revokePermissionFromRole(ROLE, FILE)
+            ),
+            deleteResourceK(FILE)
+        )
+    ).
+
+updateEncryptedFile :-
+    encryptFile, decryptFile. 
+
+
+% operations
+
+addUser(USER) :-
+    assert(user(USER)),
+    addUserC(USER).
+
+deleteUser(USER) :-
+    user(USER),
+
+    % delete memberships
+    foreach(
+        isMember(USER, ROLE),
+        revokeUserFromRole(USER, ROLE)
+    ),
+
+    retract(user(USER)),
+    deleteUserC(USER),
+    deleteUserK(USER).
+
+addRole(ROLE) :-
+    assert(role(ROLE)),
+    addRoleC(ROLE).
+
+deleteRole(ROLE) :-
+    role(ROLE),
+
+    foreach(
+        allow(ROLE, FILE),
+        revokePermissionFromRole(ROLE, FILE)
+    ),
+
+    foreach(
+        isMember(USER, ROLE),
+        revokePermissionFromRole(USER, ROLE)
+    ),
+
+    retract(role(ROLE)),
+    deleteRoleC(ROLE),
+    deleteRoleK(ROLE).
+
+addResource(FILE) :-
+    assert(file(FILE)),
+    addResourceC(FILE),
+    (
+        isEncryptionNeeded(FILE) -> addResourceK(FILE);
+        true
+    ).
+
+    deleteResource(FILE) :-
+        file(FILE),
+    
+        foreach(
+            allow(ROLE, FILE),
+            retract(allow(ROLE, FILE))
+        ),
+    
+        retract(file(FILE)),
+        deleteResourceC(FILE),
+        deleteResourceK(FILE).
+
+deleteResource(FILE) :-
+    file(FILE),
+
+    foreach(
+        allow(ROLE, FILE),
+        revokePermissionFromRole(ROLE, FILE)
+    ),
+
+    retract(file(FILE)),
+    deleteResourceC(FILE),
+    deleteResourceK(FILE).
+        
+
+assignUserToRole(USER, ROLE) :-
+    user(USER), role(ROLE),                     % checks
+    assert(isMember(USER, ROLE)),
+    assignUserToRoleC(USER, ROLE),
+    (
+        file(FILE), allow(ROLE, FILE),
+        isEncryptionNeeded(FILE) 
+        ->
+        addUserK(USER), addRoleK(ROLE),
+        assignUserToRoleK(USER, ROLE)
+        ;
+        true
+    ).
+
+assignPermissionToRole(ROLE, FILE) :-
+    role(ROLE), file(FILE),                     % checks
+    assert(allow(ROLE, FILE)),
+    assignPermissionToRoleC(ROLE, FILE),
+    (
+        isEncryptionNeeded(FILE)
+        ->
+        addRoleK(ROLE),
+        assignPermissionToRoleK(ROLE, FILE),
+        foreach(
+            isMember(USER, ROLE),
+            (
+                addUserK(USER),
+                assignUserToRoleK(USER, ROLE)
+            )
+        )
+        ;
+        true
+    ).
+
+revokePermissionFromRole(ROLE, FILE) :- 
+    role(ROLE), file(FILE),
+    revokePermissionFromRoleC(ROLE, FILE),
+    revokePermissionFromRoleR(ROLE, FILE),
+    (
+        isReencryptionNeededOnRP(ROLE, FILE)
+        ->
+        prepareReenctyptionResourceR(FILE),
+        (
+            isEagerReencNeededOnRP(ROLE, FILE)
+            ->
+            reencryptResourceR(FILE)
+            ;
+            true
+        )
+        ;
+        true
+    ),
+
+    % must be done at last!
+    retract(allow(ROLE, FILE)).
+
+revokeUserFromRole(USER, ROLE) :-
+    user(USER), role(ROLE),
+    revokeUserFromRoleC(USER, ROLE),
+    revokeUserFromRoleK(USER, ROLE),
+
+    % role tuple
+    (
+        isRoleKeyRotationNeededOnRUR(USER, ROLE)
+        ->
+        rotateRoleKeyK(ROLE)
+        ;
+        true
+    ),
+
+    % files
+    (
+        isReencryptionNeededOnRUR(USER, ROLE, FILE)
+        ->
+        prepareReenctyptionResourceR(FILE),
+        (
+            isEagerReencNeededOnRUR(USER, ROLE, FILE)
+            ->
+            reencryptResourceR(FILE)
+            ;
+            true
+        )
+        ;
+        true
+    ),
+
+    retract(isMember(USER, ROLE)).
+
+
+% queries
+
+canAccessPure(USER, FILE) :-
+    user(USER), file(FILE),     % checks
+    role(ROLE),
+    isMember(USER, ROLE),
+    allow(ROLE, FILE).
+\end{lstlisting}

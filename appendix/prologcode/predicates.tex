@@ -1,0 +1,54 @@
+\section{\texttt{predicates.pro}}
+\label{app:prologcode.predicates}
+
+\setcode
+\begin{lstlisting}[language=Prolog]
+% imports
+
+:- ensure_loaded('hybrid_spec.pro').
+
+
+% predicates definition
+
+:- dynamic enc/1.               % file | role | file
+:- dynamic eager/1.             % file | role | file
+:- dynamic cspNoEnforce/1.      % file
+:- dynamic collusionProne/1.    % user
+
+
+% combinations rules
+
+encF(FILE) :- file(FILE), enc(FILE).
+encF(FILE) :- file(FILE), role(ROLE), allow(ROLE, FILE), enc(ROLE). 
+encF(FILE) :- file(FILE), user(USER), enc(USER), canAccessPure(USER, FILE).
+
+eagerF(FILE) :- file(FILE), eager(FILE).
+eagerF(FILE) :- file(FILE), role(ROLE), allow(ROLE, FILE), eager(ROLE). 
+eagerF(FILE) :- file(FILE), user(USER), eager(USER), canAccessPure(USER, FILE).
+
+isEncryptionNeeded(FILE) :- encF(FILE).
+
+isReencryptionNeededOnRP(ROLE, FILE) :-
+    role(ROLE), file(FILE),                                         % checks
+    enc(FILE), cspNoEnforce(FILE),                                  % file encrypted & csp not trusted to protect this file
+    user(USER), collusionProne(USER), canAccessPure(USER, FILE).    % exists a user that can access and is not trusted
+
+isEagerReencNeededOnRP(ROLE, FILE) :-
+    role(ROLE), file(FILE),                                         % checks
+    isReencryptionNeededOnRP(ROLE, FILE),                           % need reencryption
+    eagerF(FILE).                                                   % eager file (also indirectly)
+
+isRoleKeyRotationNeededOnRUR(USER, ROLE) :-
+    user(USER), role(ROLE),
+    collusionProne(USER), isMember(USER, ROLE).
+
+isReencryptionNeededOnRUR(USER, ROLE, FILE) :-
+    user(USER), role(ROLE), file(FILE),                                         % checks
+    enc(FILE), cspNoEnforce(FILE),                                              % file encrypted & csp not trusted to protect this file
+    user(OTHER_USER), collusionProne(OTHER_USER), canAccessPure(USER, FILE).    % exists a user that can access and is not trusted
+
+isEagerReencNeededOnRUR(USER, ROLE, FILE) :-
+    role(ROLE), file(FILE),                                         % checks
+    isReencryptionNeededOnRUR(USER, ROLE, FILE),                    % need reencryption
+    eagerF(FILE).                                                   % eager file (also indirectly)    
+\end{lstlisting}

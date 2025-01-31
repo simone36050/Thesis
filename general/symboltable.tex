@@ -1,0 +1,293 @@
+\wraptable{|c|c|X|}{\label{fig:symbols}Symbols}{
+    \threecols{\textbf{Category}}
+              {\textbf{Symbol}}
+              {\textbf{Description}}
+    \threecolsnl{\multirow{6}{*}{\acrshort{ac}}}
+                {\( \states \)}
+                {the set of states}
+    \threecolsnl{}
+                {\( \state \)}
+                {a state, \( \state \in \states \)}
+    \threecolsnl{}
+                {\( \queries \)}
+                {the set of queries}
+    \threecolsnl{}
+                {\( \entailment \)}
+                {the entailment function}
+    \threecolsnl{}
+                {\( \scrules \)}
+                {the state-change rules}
+    \threecolsnl{}
+                {\( \scrule \)}
+                {a state-change rule, \( \scrule \in \scrules \)}
+    \hline
+    \threecolsnl{\multirow{14}{*}{\acrshort{rbac}}}
+                {\( \users \)}
+                {the set of users}
+    \threecolsnl{}
+                {\( \user \)}
+                {a user, \( \user \in \users \)}
+    \threecolsnl{}
+                {\( \roles \)}
+                {the set of roles}
+    \threecolsnl{}
+                {\( \role \)}
+                {a role, \( \role \in \roles \)}
+    \threecolsnl{}
+                {\( \files \)}
+                {the set of resources (files)}
+    \threecolsnl{}
+                {\( \file \)}
+                {a resource (file), \( \file \in \files \)}
+    \threecolsnl{}
+                {\( \urassignement \)}
+                {the set of user-role assignments}
+    \threecolsnl{}
+                {\( \operations \)}
+                {the set of operations}
+    \threecolsnl{}
+                {\( \operation \)}
+                {an operation, \( \operation \in \operations \)}
+    \threecolsnl{}
+                {\( \opread \)}
+                {read operation, \( \opread \in \operations \)}
+    \threecolsnl{}
+                {\( \opwrite \)}
+                {write operation, \( \opwrite \in \operations \)}
+    \threecolsnl{}
+                {\( \opreadwrite \)}
+                {both read and write operations}
+    \threecolsnl{}
+                {\( \permissions \)}
+                {the set of all possible permissions}
+    \threecolsnl{}
+                {\( \frassignement \)}
+                {is the permission-role assignement}
+    \hline
+    \threecolsnl{\multirow{2}{*}{Extended  \gls{rbac}}}
+                {\( \predicates \)}
+                {the set of predicates}
+    \threecolsnl{}
+                {\( \prassignement \)}
+                {the set of predicate-entity assignement}
+    \hline
+    \threecolsnl{\multirow{15}{*}{CAC}}
+                {\( \genpub \)}
+                {generate asymmetric key-pair}
+    \threecolsnl{}
+                {\( \gensig \)}
+                {generate signing key-pair}
+    \threecolsnl{}
+                {\( \gensym \)}
+                {generate symmetric key}
+    \threecolsnl{}
+                {\( \keyenc{\actor} \)}
+                {encryption key of entity \( \actor \)}
+    \threecolsnl{}
+                {\( \keydec{\actor} \)}
+                {decryption key of entity \( \actor \)}
+    \threecolsnl{}
+                {\( \keysig{\actor} \)}
+                {signing key of entity \( \actor \)}
+    \threecolsnl{}
+                {\( \keyver{\actor} \)}
+                {verification key of entity \( \actor \)}
+    \threecolsnl{}
+                {\( \key{}{\file} \)}
+                {encryption key of file \( \file \)}
+    \threecolsnl{}
+                {\( \encpub{\keyenc{\actor}}{...} \)}
+                {encrypt with key \( \keyenc{\actor} \) (asymmetric)}
+    \threecolsnl{}
+                {\( \decpub{\keyenc{\actor}}{...} \)}
+                {decrypt with key \( \keyenc{\actor} \) (asymmetric)} 
+    \threecolsnl{}
+                {\( \encsym{\keyenc{\actor}}{...} \)}
+                {encrypt with key \( \keyenc{\actor} \) (symmetric)}
+    \threecolsnl{}
+                {\( \decsym{\keyenc{\actor}}{...} \)}
+                {decrypt with key \( \keyenc{\actor} \) (symmetric)} 
+    \threecolsnl{}
+                {\( \sig{\actor} \)}
+                {signature made by \( \actor \)}
+    \threecolsnl{}
+                {\( \verifysig{\key{}{\actor}}{...} \)}
+                {verification with the key of \( \actor \)}
+    \hline
+    \threecolsnl{\multirow{9}{*}{Costs}}
+                {\( \cgensig \)}
+                {generation of a signing key-pair}
+    \threecolsnl{}
+                {\( \cgenpub \)}
+                {generation of an asymmetric key-pair}
+    \threecolsnl{}
+                {\( \gensym \)}
+                {generation of a symmetric key}
+    \threecolsnl{}
+                {\( \cencsym \)}
+                {encryption with a symmetric algorithm}
+    \threecolsnl{}
+                {\( \cencpub \)}
+                {encryption with an asymmetric algorithm}
+    \threecolsnl{}
+                {\( \cdecsym \)}
+                {decryption with a symmetric algorithm}
+    \threecolsnl{}
+                {\( \cdecpub \)}
+                {decryption with an asymmetric algorithm}
+    \threecolsnl{}
+                {\( \csig \)}
+                {signing data}
+    \threecolsnl{}
+                {\( \cverifysig \)}
+                {verification signed data}
+    \hline
+}
+
+
+% \begin{table}
+%     \begin{tabularx}{\textwidth}{preamble}
+        
+%     \end{tabularx}
+% \end{table}
+
+
+% \begin{table}
+% 	%	\scriptsize
+% 	%	\setlength\tabcolsep{2.0pt}
+% 	\caption{Symbols}
+% 	\begin{tabularx}{\linewidth}{c|c*1{>{\sloppy\arraybackslash} X }}
+		
+% 		\hline
+		
+% 		\multicolumn{1}{c}{Level} &
+% 		\multicolumn{1}{c}{Symbol} &
+% 		\multicolumn{1}{c}{Description} \\
+% 		\hline
+		
+		
+% 		\multirow{4}{*}{Policy} &		
+% 		$\policy$ &
+% 		The \gls{ac} policy \\
+		
+% 		% &
+% 		% \cellcolor{cloud}$\predicates$ &
+% 		% \cellcolor{cloud}The set of predicates \\
+		
+% 		% &
+% 		% $\policyt$ &
+% 		% The \gls{ac} policy to enforce traditionally ($\policyt \subseteq \policy$) \\		
+		
+% 		% &
+% 		% \cellcolor{cloud}$\policyc$ &
+% 		% \cellcolor{cloud}The \gls{ac} policy to enforce cryptographically ($\policyc \subseteq \policy$) \\
+		
+% 		% \hline
+		
+		
+		
+% 		% \multirow{7}{*}{Model} &
+% 		% $\users$ &
+% 		% The set of users \\
+		
+% 		% &
+% 		% \cellcolor{cloud}$\roles$ &
+% 		% \cellcolor{cloud}The set of roles \\
+		
+		
+% 		% &
+% 		% $\files$ &
+% 		% The set of files \\	
+		
+% 		% &
+% 		% \cellcolor{cloud}$\operations$ &
+% 		% \cellcolor{cloud}The set of operations that can be performed over files \\	
+		
+		
+% 		% &
+% 		% $\permissions$ &
+% 		% The set of permissions that can be distributed ($\permissions \subseteq \files \times \operations$) \\	
+		
+% 		% &
+% 		% \cellcolor{cloud}$\ur$ &
+% 		% \cellcolor{cloud}The set of assignments between users and roles ($\ur \subseteq \users \times \roles$) \\	
+		
+		
+% 		% &
+% 		% $\pa$ &
+% 		% The set of assignments between roles and permissions ($\pa \subseteq \roles \times \permissions$) \\	
+		
+% 		% \hline
+		
+		
+		
+% 		% \multirow{8}{*}{Enforcement} &
+% 		% $\users_{\mm t}$ &
+% 		% The set of users' data; each element is a single value $u$ \\
+		
+% 		% \multirow{8}{*}{(Traditional)} &
+% 		% \cellcolor{cloud}$\roles_{\mm t}$ &
+% 		% \cellcolor{cloud}The set of roles' data; each element is a single value $r$\\
+		
+% 		% &
+% 		% $\files_{\mm t}$ &
+% 		% The set of files' data; each element is a single value $f$\\
+		
+% 		% &
+% 		% \cellcolor{cloud}\multirow{2}{*}{$\operations_{\mm t}$} &
+% 		% \cellcolor{cloud}The set of operations that can be performed over files ($\operations_{\mm t} = {\rperm, \wperm}$) \\	
+		
+% 		% &
+% 		% \multirow{2}{*}{$\ur_{\mm t}$} &
+% 		% The set of data related to the assignments between users and roles; each element is a tuple $(u,r)$ \\	
+		
+% 		% &
+% 		% \cellcolor{cloud}\multirow{2}{*}{$\pa_{\mm t}$} &
+% 		% \cellcolor{cloud}The set of data related to the assignments between roles and permissions; each element is a tuple $(r, \langle f, \mathit{op} \rangle )$ \\	
+		
+		
+		
+% 		% \hhline{|~|--|}
+		
+		
+		
+% 		% \multirow{16}{*}{Enforcement} &
+% 		% $\users_{\mm c}$ &
+% 		% The set of users' data; each element is a tuple $(u,\token_u,\enckey_u,\verkey_u)$ \\
+		
+% 		% \multirow{16}{*}{(Cryptographic)} &
+% 		% \multirow{2.5}{*}{\cellcolor{cloud}$\roles_{\mm c}$} &
+% 		% \cellcolor{cloud}The set of roles' data; each element is a tuple $(r,\token_{(r,v_r)},\enckey_{(r,v_r)},\verkey_{(r,v_r)}, v_r)$ \\
+		
+% 		% &
+% 		% $\files_{\mm c}$ &
+% 		% The set of files' data; each element is a tuple $(f, \token_{(f,v_f)}, v_f)$ \\
+		
+% 		% &
+% 		% \cellcolor{cloud}\multirow{2}{*}{$\operations_{\mm c}$} &
+% 		% \cellcolor{cloud}The set of operations that can be performed over files ($\operations_{\mm c} = {\rperm, \wperm}$) \\	
+		
+% 		% &
+% 		% \multirow{3.5}{*}{$\roletuples$} &
+% 		% The set of data related to the assignments between users and roles; each element is a tuple $(u,r,\PKEnc_{\enckey_{u}}\left( \enckey_{(r,v_r)}, \deckey_{(r,v_r)}, \verkey_{(r,v_r)}, \sigkey_{(r,v_r)} \right), v_r)$ \\	
+		
+% 		% &
+% 		% \cellcolor{cloud}\multirow{3.5}{*}{$\permissiontuples$} &
+% 		% \cellcolor{cloud}The set of data related to the assignments between roles and permissions; each element is a tuple $(r, f, \token_{(r,v_r)}, \token_{(f,v_f)}, \PKEnc_{\enckey_{(r,v_r)}}\left( \symkey_{(f,v_f)} \right), v_r, v_A, \mathit{op})$ \\
+		
+% 		% &
+% 		% \multirow{2}{*}{$\filetuples$} &
+% 		% The set of data related to encryption types and file version numbers; each element is a tuple $(f, \token_{(f,v_f)}, v_f, \encType_f, \token_{(r,v_r)})$ \\ 
+		
+% 		% &
+% 		% \cellcolor{cloud}\multirow{2}{*}{$\roleshadowgroup$} &
+% 		% \cellcolor{cloud}The set of data related to the assignments between roles and shadow groups; each element is a tuple $(r,g)$\\		
+		
+		
+		
+% 		% \bottomrule
+		
+% 	\end{tabularx}
+% 	\label{table:notation}
+% \end{table}
+

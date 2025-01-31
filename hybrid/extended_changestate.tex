@@ -1,0 +1,174 @@
+\pagelisting{\label{list:extended_changestate}The state-change rules \( \scrules \) of the hybrid model }{\scriptsize}{b!}{
+    \begin{itemize}
+
+        %% --- addUser ---
+        \item \( \addUserF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users \cup \setof{\user}}{\roles}{\files}{\urassignement}{\frassignement}{\prassignement} \)
+            \item \( \addUserFC \)
+            \item \( \addUserFK \)
+        \end{itemize}
+
+        %% --- deleteUser ---
+        \item \( \deleteUserF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users \setminus \setof{\user}}{\roles}{\files}{\urassignement}{\frassignement}{\prassignement} \)
+            \item For each \( (\user, \role) \in \urassignement \):
+            \begin{itemize}
+                \item \( \revokeUserFromRoleFC \)
+                \item \( \revokeUserFromRoleFK \)
+            \end{itemize}
+            \item \( \deleteUserFC \)
+            \item \( \deleteUserFK \)
+        \end{itemize}
+
+        %% --- addRole ---
+        \item \( \addRoleF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users}{\roles \cup \setof{\role}}{\files}{\urassignement}{\frassignement}{\prassignement} \)
+            \item \( \addRoleFC \)
+            \item \( \addRoleFK \)
+        \end{itemize}
+
+        %% --- deleteRole ---
+        \item \( \deleteRoleF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users}{\roles \setminus \setof{\role}}{\files}{\urassignement}{\frassignement}{\prassignement} \)
+            \item For each \( (\role, \twoang{\operation}{\file}) \in \frassignement \):
+            \begin{itemize}
+                \item \( \revokePermissionFromRoleF \)
+            \end{itemize}
+            \item \( \deleteRoleFC \)
+            \item \( \deleteRoleFK \)
+        \end{itemize}
+
+        %% --- addResource ---
+        \item \( \addResourceF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users}{\roles}{\files \cup \setof{\file}}{\urassignement}{\frassignement}{\prassignement} \)
+            \item \( \addResourceFC \)
+        \end{itemize}
+
+        %% --- deleteResource ---
+        \item \( \deleteResourceF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users}{\roles}{\files \setminus \setof{\file}}{\urassignement}{\frassignement}{\prassignement} \)
+            \item \( \deleteResourceFC \)
+            \item For each \( (\role, \twoang{\operation}{\file}) \in \frassignement \):
+            \begin{itemize}
+                \item \( \revokePermissionFromRoleF \)
+            \end{itemize}
+            \item If \( \isEncryptionNeededF \):
+            \begin{itemize}
+                \item \( \deleteResourceFK \)
+            \end{itemize}
+        \end{itemize}
+
+        %% --- assignUserToRole ---
+        \item \( \assignUserToRoleF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users}{\roles}{\files}{\urassignement \cup \setof{(\user, \role)}}{\frassignement}{\prassignement} \)
+            \item \( \assignUserToRoleFC \)
+            \item \( \assignUserToRoleFK \)
+        \end{itemize}
+
+        %% --- assignPermissionToRole ---
+        \item \( \assignPermissionToRoleF \)
+        \begin{itemize}
+            \item Update state with \( \statete{\users}{\roles}{\files}{\urassignement}{\frassignement \cup (\role, \twoang{\operation}{\file})}{\prassignement} \)
+            \item \( \assignPermissionToRoleFC \)
+            \item If \( \isEncryptionNeededF \):
+            \begin{itemize}
+                \item \( \assignPermissionToRoleFK \)
+            \end{itemize}
+        \end{itemize}
+
+    \end{itemize}
+}{
+    \begin{itemize}
+
+        %% --- revokeUserFromRole ---
+        \item \( \revokeUserFromRoleF \)
+        \begin{itemize}
+            \item \( \revokeUserFromRoleFC \)
+            \item For each \( (r, \twoang{\operation}{\file}) \in \frassignement \) with \( \isEncryptionNeededF \)
+            \begin{itemize}
+                \item \( \revokeUserFromRoleFK \)
+                \item If \( \isReencryptionNeededOnRURF \):
+                \begin{itemize}
+                    \item \( \prepareReencryptionF \)
+                \end{itemize}
+                \item If \( \isEagerReencNeededOnRURF \):
+                \begin{itemize}
+                    \item \( \reencryptResourceF \)
+                \end{itemize}
+            \end{itemize}
+            \item \( \revokeUserFromRoleFK \)
+            \item If exists \( (r, \twoang{-}{\file}) \in \frassignement \) with \( \isEncryptionNeededF \) and \( \isRoleKeyRotationNeededOnRURF \):
+            \begin{itemize}
+                \item \( \rotateRoleKeyF \)
+            \end{itemize}
+            \item Update state with \( \statete{\users}{\roles}{\files}{\urassignement \setminus \setof{(\user, \role)}}{\frassignement}{\prassignement} \)
+        \end{itemize}
+
+        %% --- revokePermissionFromRole ---
+        \item \( \revokePermissionFromRoleF \)
+        \begin{itemize}
+            \item \( \revokePermissionFromRoleFC \)
+            \item If \( \isEncryptionNeededF \):
+            \begin{itemize}
+                \item \( \revokePermissionFromRoleFK \)
+                \item If \( \isReencryptionNeededOnRPF \):
+                \begin{itemize}
+                    \item \( \prepareReencryptionF \)
+                \end{itemize}
+                \item If \( \isEagerReencNeededOnRPF \):
+                \begin{itemize}
+                    \item \( \reencryptResourceF \)
+                \end{itemize}
+            \end{itemize}
+            \item Update state with \( \statete{\users}{\roles}{\files}{\urassignement}{\frassignement \setminus (\role, \twoang{\operation}{\file})}{\prassignement} \)
+        \end{itemize}
+
+        %% --- updateEncryptedFiles ---
+        \item \( \updateEncryptedFilesF \)
+        \begin{itemize}
+            \item For each \( \file \in (file_1 \setminus file_2) \):
+            \begin{itemize}
+                \item For each \( (\role, \twoang{\operation}{\file}) \in \prassignement \):
+                \begin{itemize}
+                    \item \( \revokePermissionFromRoleFK \)
+                \end{itemize}
+                \item \( \deleteResourceFK \)
+            \end{itemize}
+            \item For each \( \file \in (file_2 \setminus file_1) \):
+            \begin{itemize}
+                \item \( \addResourceFK \)
+                \item For each \( (r, \twoang{\operation}{\file}) \in \prassignement \):
+                \begin{itemize}
+                    \item \( \assignPermissionToRoleFK \)
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+
+        %% --- assignPredicate ---
+        \item \( \assignPredicateF \)
+        \begin{itemize}
+            \item Set \( files_1 \leftarrow \setof{\file \in \files \vert \isEncryptionNeededF} \)
+            \item Update state with \( \statete{\users}{\roles}{\files}{\urassignement}{\frassignement}{\prassignement \cup \setof{\predicate, \actor}} \)
+            \item Set \( files_2 \leftarrow \setof{\file \in \files \vert \isEncryptionNeededF} \)
+            \item \( \updateEncryptedFilesF \)
+        \end{itemize}
+
+        %% --- revokePredicate ---
+        \item \( \revokePredicateF \)
+        \begin{itemize}
+            \item Set \( files_1 \leftarrow \setof{\file \in \files \vert \isEncryptionNeededF} \)
+            \item Update state with \( \statete{\users}{\roles}{\files}{\urassignement}{\frassignement}{\prassignement \setminus \setof{\predicate, \actor}} \)
+            \item Set \( files_2 \leftarrow \setof{\file \in \files \vert \isEncryptionNeededF} \)
+            \item \( \updateEncryptedFilesF \)
+        \end{itemize}
+
+
+    \end{itemize}
+}

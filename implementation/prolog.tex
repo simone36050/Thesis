@@ -1,0 +1,10 @@
+\section{Prolog Implementation}
+\label{sec:implementation.prolog}
+
+To demonstrate the functionality of our proposal, we implemented the \erbac in Prolog. The program comprises four files: \filename{rbac\_spec.pro}, which manages the centralized \gls{ac}, \filename{cac\_spec.pro}, which manages the \gls{cac} proposed in \Cref{sec:hybrid.cac}, \filename{hybrid\_spec.pro}, which manages the extended \gls{rbac} model, and \filename{predicates.pro}, which defines the security model as outlined in \Cref{sec:hybird_istantiation}. The security model of a company can be redefined by an administrator through the modification of the \filename{predicates.pro} file. This file contains the definitions of predicates set \( \predicates \) and entailment function \( \entailment \).
+
+The \erbac's state-change rules are invoked by the administrator through a Prolog query. The query name coincides with the names defined in \Cref{sec:hybrid.scheme}, and the parameters are passed as arguments. For instance, the query \( \revokePermissionFromRole \) is invoked as follows: \( \revokePermissionFromRoleF \). Prolog will invoke the state-change rules of the centralized AC system, which are identifiable by the words \textcode{[TRADIT]} at the beginning and light green color in \inoutstream{stdout}. The logic part of \gls{cac} is implemented by Prolog, which interfaces with a second component for cryptographic operations and interaction with the monitor, data manager, and metadata manager. The Prolog program outputs tuples to \inoutstream{stdout} that are to be created or deleted. These tuples are preceded by the word \textcode{[CRYPT]} and are colored purple.
+
+The Prolog program implementation is fully represented in \Cref{app:prologcode}.
+
+

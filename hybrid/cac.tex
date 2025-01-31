@@ -1,0 +1,61 @@
+\section{The Modified Cryptographic Access Control Scheme}
+\label{sec:hybrid.cac}
+
+The scheme proposed in \cite{cac} assumes a specific security model. For example, it assumes that the \gls{csp} is honest-but-curious and therefore not trusted to protect any files. It also assumes that users could always collude with the \gls{csp}. Based on the previous security model, the scheme determines which operation to perform, resulting in many computationally expensive operations, such as always re-encrypting all files. To compile the security model chosen by the administrator in \gls{cac}, modifications are required. The changes can be categorized into two groups: isolating specific instructions, such as separating the revocation part of a permission from the re-encryption of files that a user previously had access to, and implementing functionality that was not originally provided, such as the ability to perform eager re-encryption.
+
+The purpose of the changes is to ensure the following characteristics:
+\begin{itemize}
+	\item \textbf{role key rotation}: the original \cacwhat assumes that a user can save the role key and continue to use it even if access is revoked, so the keys are always changed when a revocation occurs. Not all security models provide for this, so it's necessary to make this operation optional;
+	
+	\item \textbf{file re-encryption}: whenever a permission is revoked or a user is revoked from a role, the file is re-encrypted. This operation may not be necessary (e.g. because a user has been promoted to another role and is considered trusted). Re-encryption should be separate from revocation and should be optional;
+	
+	\item \textbf{eager/lazy re-encryption}: the original scheme only implements lazy re-encryption, meaning that each time a file is re-encrypted, a new key and corresponding tuples are generated. However, the file is not actually re-encrypted until the first write, which improves performance. There is no mention of eager re-encryption in the original scheme. However, it is intended to allow for eager re-encryption, where a file can be re-encrypted immediately, or lazy re-encryption, where it is re-encrypted at the first write, from time to time.
+\end{itemize}
+
+To achieve the features described above, the state-change rule has been modified as follows. \( \deleteUserFK \) now only checks that the user is no longer assigned to a role. \( \deleteResourceFK \) now simply checks that no associated permissions exist and deletes the file tuple. \( \deleteRoleFK \) now simply checks that no user is assigned to role \( \role \) and that no file has a permission associated with \( \role \). The state-change rules \( \revokeUserFromRoleFK \) and \( \revokePermissionFromRoleFK \) have been modified to exclude the part that re-encrypts files. This part has been moved to a separate state-change rule called \( \prepareReencryptionF \), which prepares the file for re-encryption. A state-change rule \( \reencryptResourceF \) has been introduced to immediately re-encrypt a pending file. To achieve lazy re-encryption, it is sufficient to call \( \prepareReencryptionF \). For eager re-encryption, it is also necessary to call \( \reencryptResourceF \) immediately afterward. The part that regenerates the role key \( \role \) in the state-change rule \( \revokeUserFromRoleFK \) was removed. This part was moved to a separate state-change rule called \( \rotateRoleKeyF \). The outcome can be found in \Cref{list:cac_reimpl}.
+
+% Thirdly, eager re-encryption expects the file to be reencrypted immediately when re-encryption is triggered (e.g. because a user loses access), whereas lazy re-encryption expects it to be reencrypted when it is first written \stefanonote{Could we perhaps explain more in detail what ``lazy'' re-encryption is? that is, the current version of the file is left as it is --- i.e., encrypted with the old sym key --- while future versions of the file will be encrypted by users with the new sym key}. The proposal in \cite{cac} provides only lazy re-encryption for reasons of efficiency; some files may be sensitive and it is necessary to reencrypt them immediately. The modified system allows one to choose on a case-by-case basis whether to do eager or lazy re-encryption. As a result, the scheme was modified in two ways: certain operations were made executable only under specific conditions, and certain operations were isolated for individual execution. 
+
+% For instance, \Cref{list:refactor_code} illustrates the function before and after our modifications; in fact, \newline \( \revokeUserFromRoleF \) removes the tuple that allows the user to decrypt the role key, rotates the role key, and prepares the files to be re-encrypted on first access. \Cref{list:cac_reimpl} shows the outcome of all the following changes:
+% \begin{itemize}
+	%     \item \( \function{revokeU}(\user, \role) \): it no longer rotates the role key and does not re-encrypt files for which access is lost;
+	%     \item \( \function{revokeP}(\role, \angular{\file, \operation}) \): it no longer re-encrypt files for which access is lost;
+	%     \item a function called \( \function{rotateR}(\role) \) has been introduced, which rotates the key of role \( \role \);
+	%     \item a function called \( \function{prepareReenctyption}(\file) \) has been introduced, which creates tuples for lazy-re-encryption;
+	%     \item a function called \( \function{reencryptResource}(\file) \) has been introduced, which reencrypt the file is a lazy-encryption is pending.
+	% \end{itemize}
+
+
+% \stefanonote{So we want to say that the CAC scheme by Garrison et al. specifies the implementation of RBAC state-change rules for CAC {\bf but} such an implementation expects some RBAC state-change rules to execute multiple cryptographic computations, our point being that some of these cryptographic computations may not need to be executed according to the specified predicates, therefore in \Cref{list:extended_changestate,list:cac_reimpl} we identify and highlight ``atomic'' cryptographic computations and make the execution of such atomic cryptographic computations conditional/dependent on queries/predicates?}
+
+
+\input{hybrid/cac_reimpl.tex}
+
+
+% \pagelisting{\label{list:refactor_code}Conceptual code refactor of \gls{cac}, on left there is the original implementation \cite{cac}, on right our modified code}{}{b!}{
+	%     \begin{itemize}
+		%         \item \( \revokeUserFromRoleF \):
+		%         \begin{itemize}
+			%             \item \texttt{delete_tuple_code}
+			%             \item \texttt{rotate_key_code}
+			%             \item \texttt{reencrypt_files_section}
+			%         \end{itemize}
+		%     \end{itemize}
+	% }{
+	%     \begin{itemize}
+		%         \item \( \revokeUserFromRoleFK \):
+		%         \begin{itemize}
+			%             \item \texttt{delete_tuple_code}
+			%         \end{itemize}
+		
+		%         \item \( \rotateRoleKeyF \):
+		%         \begin{itemize}
+			%             \item \texttt{rotate_key_code}
+			%         \end{itemize}
+		
+		%         \item \( \prepareReencryptionF \):
+		%         \begin{itemize}
+			%             \item \texttt{reencrypt_file_section}
+			%         \end{itemize}
+		%     \end{itemize}
+	% }

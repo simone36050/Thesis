@@ -1,0 +1,229 @@
+\chapter{TODOs/notes}
+
+This section contains the todos and notes for the dissertation
+
+\begin{itemize}
+    \item \stefanonote{Let's think about 4-5 different titles for the thesis to propose to Prof. Ranise}
+    \item \simonenote{Check present vs past}
+    \item \simonenote{Is it ok to use a different font size for listing? (e.g., \textbackslash\texttt{tiny}, \textbackslash\texttt{scriptsize}, \textbackslash\texttt{footnotesize})}
+    \item \simonenote{Dobbiamo risolvere il problema della tupla dell'utente non autenticata?}
+    \item \simonenote{Non scriviamo qui le nostre scelte perché è la sezione background, qui diamo solo i concetti, spieghiamo cos'è RBAC, ABAC, diamo la spiegazione completa di come funziona RBAC. Poi nel capitolo dopo diciamo che abbiamo basato il nostro lavoro su RBAC}
+\end{itemize}
+
+\section{Future work notes}
+
+\stefanonote{I report here commented in \LaTeX possible future work for this thesis}
+\begin{itemize}
+    \item \textbf{Usability}: revisori potrebbero pensare che è complesso per amministratori capire e specificare predicati \( \Rightarrow \) fare studio di usability per futuro paper
+    
+    \item \textbf{AC Consistency}: usare prolog per verificare la consistenza della policy CAC prodotta da CryptoAC e quella ideale prodotta da prolog (model-based testing)
+    
+    \item \textbf{Negative permissions}: an access control scheme (e.g., RBAC) can be enhanced through the definition of negative permissions, i.e., permissions override the behavior of the underlying system.
+    \begin{itemize}
+        \item In the state of the art, cryptographic AC systems support only "positive" permissions. It is desired to provide a new CAC system that permits negative permissions to be handled efficiently.
+        \item As we would have more rules that apply to the same AC request, remember the concept of rule combination (see https://www.cs.purdue.edu/homes/ninghui/papers/pca_sacmat09.pdf).
+        \item Remember also that going from RBAC+/- to RBAC+ does not depend on the enforcement, even though some types of enforcements -- i.e., CAC -- support RBAC + only
+    \end{itemize}
+
+    \item \textbf{Efficientamento}: distribuzione chiavi utenti con hierarchical key assignment schemes per migliorare efficienza di revoche. Altra idea, ridurre l'uso di crittografia asimmetrica in favore di quella simmetrica. Altra idea, usare log per sapere quali utenti hanno acceduto a quali chiavi per evitare eager (o anche lazy) re-encryption, il log può essere fidato oppure anche parzialmente fidato (vedere lavoro di Crosby et al su Certificate Transparency), l'intuizione è che log ha 1 pezzo di chiavi e utenti hanno l'altro pezzo.
+    
+    \item \textbf{Use Predicates for CryptoAC Placement}: i predicati e il prolog possono influire/essere usati nella definizione delle architetture di CryptoAC? Che relazione avrebbe ciò con il problema di ottimizzazione e il risk assessment?
+    \begin{itemize}
+        \item \( \Rightarrow \) e.g., in architetture ibride / ambienti multi-cloud? Potrei salvare i file sensibili on-premise e non sensibili in CSP non fidato, occhio però alle risorse
+    \end{itemize}
+\end{itemize}
+
+\section{RBAC \textrightarrow  ABAC?}
+\label{note:abac}
+
+\textless domanda: quando diverso è il nostro "AC scheme con i predicati" da ABAC? Alla fine, i predicati sono attributi, ma non fanno parte della access structure di ABAC, perché l'entailment per lettura e scrittura è sempre di RBAC \textgreater
+
+\textless risposta: se i predicati vanno nell'entailment per lettura e scrittura, allora ci si avvicina a ABAC. altrimenti, come nel nostro caso, che rimaniamo con l'entailment a RBAC, allora no \textgreater
+
+\textless rimaniamo in RBAC per sfruttare tool soluzioni e strumenti che già esistono (e.g., anche cryptoac) e non andare in ABAC. RBAC e ABAC sono modelli diversi, ognuno con pro e contro (e.g., RBAC è semplice ma poco flessibile, noi proviamo ad aggiungere flessibilità per CAC) \textgreater
+
+\section{Domanda sull'implementazione in CAC}
+\label{sec:todos.questioncac}
+
+Riporto in \Cref{app:cac_code} per chiarezza le funzioni come implementate in \cite{cac}.
+
+La mia domanda è: perché la cancellazione del ruolo non rimuove la tupla dell'utente? 
+\begin{itemize}
+    \item Si vuole mantenere per permettere di verificare le firme create dall'utente eliminato, ad esempio se l'utente eliminato ha creato un file.
+\end{itemize}
+
+Altra domanda: la questione delle tuple degli utenti non autenticate dobbiamo gestirla o la ignoriamo perché fuori dallo scopo della nostra ricerca?
+
+\pagelisting{\label{app:cac_code}Estratto dell'implementazione in \cite{cac}, a sinistra le funzioni con IBS, a destra con PKI}{\scriptsize}{b!}{
+    \begin{itemize}
+        \item \(addU(u)\)
+        \begin{itemize}
+            \item Add \(u\) to USERS
+            \item Generate IBE private key \(k_u \leftarrow \f{KeyGen}^{\f{IBE}}(u) \) and IBS private key \(s_u \leftarrow \f{KeyGen}^{\f{IBS}}(u) \) for the new user \(u\)
+            \item Give \(k_u\) and \(s_u\) to \(u\) over the private and authenticated channel
+        \end{itemize}
+
+        \item \(delU(u)\)
+        \begin{itemize}
+            \item For every role \(r\) that \(u\) is a member of:
+            \begin{itemize}
+                \item \(revokeU(u,r)\)
+            \end{itemize}
+        \end{itemize}
+
+        \item \(delP(fn)\)
+        \begin{itemize}
+            \item Remove \((fn, v_{fn})\) from FILES
+            \item Delete \( \ft{fn}{-}{-}{-}{-} \) and all \( \pt{-}{\twoang{fn}{-}}{-}{-}{-}{-} \)
+        \end{itemize}
+    \end{itemize}
+}{
+    \begin{itemize}
+        % --- AddUser ---
+        \item \( addU(u) \)
+        \begin{itemize}
+            \item User \( \user \) generate encryption key pair \( \keyencpairu \leftarrow \genpub \) and signature key \( \keysigpairu \leftarrow \gensig \)
+            \item User \( \user \) sends \( \keyencu \), \( \keyveru \) to admin 
+            \item Admin adds \( \user, \keyencu, \keyveru \) to USERS
+            \item 
+        \end{itemize}
+
+        \item \( delU(u) \)
+        \begin{itemize}
+            \item For every role \(r\) that \(u\) is a member of:
+            \begin{itemize}
+                \item \(revokeU(u,r)\)
+            \end{itemize}
+        \end{itemize}
+
+        \item \(delP(fn)\)
+        \begin{itemize}
+            \item Remove \((fn, v_{fn})\) from FILES
+            \item Delete \( \ft{fn}{-}{-}{-}{-} \) and all \( \pt{-}{\twoang{fn}{-}}{-}{-}{-}{-} \)
+        \end{itemize}
+
+    \end{itemize}
+}
+
+\section{Domanda su una sulla revoca del permesso di scrittura}
+
+Supponiamo una situazione in cui:
+\begin{itemize}
+    \item Esista un utente malevolo \(\user\)
+    \item Esista un ruolo \(\role\) tale che \((\user, \role) \in \urassignement\)
+    \item Esista un file \(\file\) tale che \((\role, \twoang{\opreadwrite}{\file}) \in \frassignement\)
+    \item L'amministratore desideri rendere il permesso in sola lettura
+    \item L'attacco è esposto in \(\f{attack}(\user, \file)\)
+\end{itemize}
+
+Una possiibile soluzione sarebbe quella di cambiare comunque il numero di versione ogni volta i permessi diminuiscono, come definito in \Cref{app:dw_perm}, in questo modo il R.M. rifiuterebbe la tupla perché avrebbe una versione minore della tupla memorizzata.
+
+\pagelisting{\label{app:dw_perm}Estratto dell'implementazione in \cite{cac} riferito alla revoca di un permesso}{\footnotesize}{b!}{
+    \begin{itemize}
+        \item \( \revokePermissionFromRoleFK \)
+        \begin{itemize}
+            \item If \( \operation = \opwrite \):
+            \begin{itemize}
+                \item For all \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}{sig} \) with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}, sig} \):
+                \begin{itemize}
+                    \item Send \( \pt{(\role, \rolev)}{\twoang{fn}{\opread}}{v}{c}{SU}{\sig{SU}} \) to R.M.
+                    \item Delete \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}{sig} \)
+                \end{itemize}
+            \end{itemize}
+            \item If \( \operation = \opreadwrite \):
+            \begin{itemize}
+                \item Delete all \( \pt{(\role, \rolev)}{\twoang{fn}{-}}{-}{-}{-}{-} \)
+                \item Generate new symmetric key \( k' = \gensym \)
+                \item For all \( \pt{r'}{\twoang{fn}{\operation'}}{\filev}{c}{SU}{sig} \) with \( \verifysig{\keyver{SU}}{\pts{r'}{\twoang{fn}{\operation'}}{\filev}{c}{SU}, sig} \):
+                \begin{itemize}
+                    \item Send \( \pt{r'}{\twoang{fn}{\operation'}}{\filev+1}{\encpub{r'}{k'}}{SU}{\sig{SU}} \) to R.M.
+                \end{itemize}
+                \item Increment \( \filev \) in FILES, i.e., set \( \filev := \filev+1 \)
+            \end{itemize}
+        \end{itemize}
+
+        % ---- assignPermissionToRole ---
+        \item \( \assignPermissionToRoleFK \)
+        \begin{itemize}
+            \item For all \( \pt{SU}{\twoang{fn}{\opreadwrite}}{v}{c}{id}{sig} \) with \( \verifysig{\keyver{id}}{\pts{SU}{\twoang{fn}{\opreadwrite}}{v}{c}{id}, sig} \)
+            \begin{itemize}
+                \item If this adds Write permission to existing Read permission, i.e., \( \operation = \opwrite \) and there exists \( \pt{(\role, \rolev)}{\twoang{fn}{\opread}}{v}{c'}{SU}{sig} \) with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\opread}}{v}{c'}{SU}, sig} \):
+                \begin{itemize}
+                    \item Send \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c'}{SU}{\sig{SU}} \) to R.M.
+                    \item Delete \( \pt{(\role, \rolev)}{\twoang{fn}{\opread}}{v}{c'}{SU}{sig} \)
+                \end{itemize} 
+                \item If the role has no existing permission for the file, i.e., there does no exist \( \pt{(\role, \rolev)}{\twoang{fn}{op'}}{v}{c'}{SU}{sig} \) with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\operation'}}{v}{c}{SU}, sig} \):
+                \begin{itemize}
+                    \item Decrypt key \( k = \decpub{\keydec{SU}}{c} \)
+                    \item Send \( \pt{(\role, \rolev)}{\twoang{fn}{\operation}}{v}{\encpub{\keyencr{\rolev}}{k}}{SU}{\sig{SU}} \) to R.M.
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+}{
+    \begin{itemize}
+        \item \( \f{attack}(\user, \file) \)
+        \begin{itemize}
+            \item Let's assume that exist a role \(\role\) with \(\f{canDo}(\user, \twoang{\opreadwrite}{\file}) = 1\)
+            \item The user \(\user\) copy to his device the tuple \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opreadwrite}}{v}{c}{SU}{sig} \)
+            \item The administrator executes \( \revokePermissionFromRole(\role) \)
+            \item Now the server has the tuple \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opread}}{v}{c}{SU}{sig} \)
+            \item The user sends the previously stored tuple, i.e., \( \pt{(\role, \rolev)}{\twoang{\file.\fname}{\opreadwrite}}{v}{c}{SU}{sig} \)
+            \item The R.M. accepts it because it is identical to the tuple it would receive if the administrator had executed the function \( \assignPermissionToRole(\role, \twoang{\opreadwrite}{f}) \)
+            \item Now the user \(\user\) has access to \(\file\) with action \(\opreadwrite\)
+        \end{itemize}
+
+        \item Redefine \( \revokePermissionFromRoleFK \)
+        \begin{itemize}
+            \item If \( \operation = \opwrite \):
+            \begin{itemize}
+                \item For all \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}{sig} \) with \( \verifysig{\keyver{SU}}{\pts{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}, sig} \):
+                \begin{itemize}
+                    \item Send \( \pt{(\role, \rolev)}{\twoang{fn}{\opread}}{{v+1}}{c}{SU}{\sig{SU}} \) to R.M.
+                    \item Delete \( \pt{(\role, \rolev)}{\twoang{fn}{\opreadwrite}}{v}{c}{SU}{sig} \)
+                \end{itemize}
+                \item Increment \( \file \) in FILES, i.e., set \( \file := \file+1 \)
+            \end{itemize}
+            \item If \( \operation = \opreadwrite \):
+            \begin{itemize}
+                \item Delete all \( \pt{(\role, \rolev)}{\twoang{fn}{-}}{-}{-}{-}{-} \)
+                \item Generate new symmetric key \( k' = \gensym \)
+                \item For all \( \pt{r'}{\twoang{fn}{\operation'}}{\filev}{c}{SU}{sig} \) with \( \verifysig{\keyver{SU}}{\pts{r'}{\twoang{fn}{\operation'}}{\filev}{c}{SU}, sig} \):
+                \begin{itemize}
+                    \item Send \( \pt{r'}{\twoang{fn}{\operation'}}{\filev+1}{\encpub{r'}{k'}}{SU}{\sig{SU}} \) to R.M.
+                \end{itemize}
+                \item Increment \( \filev \) in FILES, i.e., set \( \filev := \filev+1 \)
+            \end{itemize}
+        \end{itemize}
+
+    \end{itemize}
+}
+
+\section{Titles}
+
+\begin{itemize}
+    \item Enhancing Access Control: An Extended RBAC Model with Tunable Features for CAC Support
+    \item Adaptive Access Control: Extending RBAC with Customizable Features for CAC Enhancement
+    \item Enhancing CAC Models with Tunable Features and Extended RBAC: A Theoretical Framework and Proof-of-Concept
+    \item Optimizing Cloud Access Control: A Modified CAC Model with Fine-Tuned Features and Predicate-based Extended RBAC
+    \item Towards Flexible Cloud Security: Customizable CAC Model and Predicate-driven Extended RBAC
+    \item Advancements in Cloud Security: A Customizable CAC Model with Predicate-based Extended RBAC
+    \item Towards Efficient Cloud Security Management: Tunable Features and Extended RBAC in a Modified CAC Model
+\end{itemize}
+
+\section{AC}
+
+\begin{itemize}
+    \item AC: def di De capitani..
+    \item AC policy: vedi sopra (es. bob può leggere questo file), l'inskeme di regole che def. chi ha accesso a cosa e come.
+    \item AC model: vedi sopra (vedi msg) (rbac, mac, dac, ...)
+    \item AC mechanism: 
+    \item CAC: approccio di fare enforcement di politiche di contorllo accessi tramite crittografia, CAC è una categoria di AC mechanism
+    \item CAC scheme: l'insime delle istruzioni che descrivono come specificare/fare enforcement... (ES. garrison et a.)
+    \item AC scheme: tupla di insieme di stati, query, etailment. Particolarizzazione/istanza dello schema. Fa riferimento a un modello (ac scheme, es. core rbac).
+    \item AC system: l'istanza di un ac scheme, tupla di uno specifico stato + uno specifico sottoinsieme di state-change rules, eredita l'entailmente e query. Esistono casi in cui considero un sosttoinsieme delle state change rules.
+\end{itemize}
+
+\simonenote{In futuro potrebbe aver senso fare una sorta di glossario con tutti i termini specifici e acronimi}
+
+

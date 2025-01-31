@@ -1,0 +1,54 @@
+\section{Access Control}
+\label{sec:background.access_control}
+
+Samarati and de Capitani di Vimercati \cite{ac_desc} describe \gls{ac} as \say{the process of mediating every request to resources maintained by a system and determining whether the request should be granted or denied}. Conceptually, \gls{ac} can be divided into three levels: policy, model, and enforcement. 
+A policy is a high-level set of rules that specifies when access should be allowed or denied, a model is a mathematical representation that defines how policies are encoded, and the enforcement is the practical implementation of a model and enforces policies (e.g. a hardware device that mediates access to a server).
+As described in \cite{ac_model}, an \gls{ac} model can also be called \gls{ac} scheme and be seen as a state transition system \( \langle \states, \queries, \entailment, \scrules \rangle \) where \( \states \) is the set of states, \( \queries \) is the set of queries, \( \entailment: \states \times \queries \to \lbrace \mathit{true}, \mathit{false} \rbrace \) is the entailment relation that determines whether a query is true or not in a given state, and \( \scrules \) is the set of state-change rules. A state-change rule has the effect of modifying the state, i.e., \( \state \mapsto_{\scrule} \state' \) --- that is, the state-change rule \(\scrule \in \scrules\) transforms the state \( \state \in \states \) into the state \( \state' \in \states\).
+
+There are many \gls{ac} models proposed in the literature, supporting different characteristics and complexities; \gls{abac} \cite{horwitz_toward_2002} and \gls{rbac} \cite{sandhu_access_1998} are two of the most commonly used \gls{ac} models \cite{cai_survey_2019}. Compared to \gls{abac}, \gls{rbac} is particularly popular in companies due to its simpler implementation and role assignment process, e.g, in \gls{rbac}, roles can be intuitively mapped to job qualifications (e.g., employee, manager) within the company. 
+Additionally, when a user is employed, they are assigned to the appropriate \gls{ac} role that corresponds to their assigned tasks \cite{cai_survey_2019}. \gls{rbac} abstracts real entities by defining the concepts of user, role, and resource. Furthermore, RBAC allows for defining operations on resources. A permission is the association of a resource and an operation to a role.
+Users are assigned roles and roles are associated with permissions --- where a permission describes an operation (e.g., \( \opread \), \( \opwrite \)) on a resource (e.g., file). Formally, a state \( \state \in \states \) in \gls{rbac} can be described as a tuple \( \langle \users, \roles, \files, \urassignement, \frassignement \rangle \) where:
+\begin{itemize}
+	\item \( \users \) is the set of users;
+	\item \( \roles \) is the set of roles;
+	\item \( \files \) is the set of resources;
+	\item \( \urassignement \subseteq \users \times \roles \) the set of user-role assignments;
+	\item \( \frassignement \subseteq \roles \times \permissions \) the set of role-permission assignments;
+	\item \( \operations \) is the set of all operations, where operations for \gls{rbac} are defined \say{on the type of system in which it is implemented} \cite{ANSI_INCITS_359_2004}. In this case, since we are dealing with files, we choose \( \operations = \lbrace \opwrite, \opread \rbrace \). This choice is consistent with the \gls{cac} scheme proposed in \cite{cac} and described in \Cref{sec:background.cac}.
+	%     \item \( \operations = \lbrace \opwrite, \opread \rbrace \) is the set of all operations; \stefanonote{In RBAC there may exist other operations beside read and write; perhaps we could mention this, and then say that in the thesis we consider only read and write for simplicity, because those are the operations considered in CAC, or that the set of all operations usually encompasses read and write access to resources? For instance, the core RBAC model proposed by the NIST in $\backslash$cite\{ANSI\_INCITS\_359\_2004\} says that ``The types of operations [...] that RBAC controls are dependent on the type of system in which it will be implemented. For example, within a file system, operations might include read, write, and execute; within a database management system, operations might include insert, delete, append, and update.''}
+	\item \( \permissions = \operations \times \files \) is the set of all possible permissions;
+\end{itemize}
+
+We report in \Cref{tab:rbac_sc} the set of state-change rules \( \scrules \) for \gls{rbac} --- according to \cite{ANSI_INCITS_359_2004} --- while the entailment function \( \entailment \) defined for \( \queries \) consists only of the query \( \canDoQ \) that indicates whether user \( \user \) has access to resource \( \file \) with permission \( \operation \). The entailment function \( \entailment \) is defined as follow: \[ \entailment( \angular{\users, \roles, \files, \urassignement, \frassignement}, \canDoQ) = \\ \exists \role \in \roles : (\user, \role) \in \urassignement \land (\role, \angular{\operation, \file}) \in \frassignement \]
+
+
+% The state-change rules \( \scrules \) is implemented as in \Cref{tab:rbac_sc} \stefanonote{Perhaps, we should say that the list of state-change rules reported in \Cref{tab:rbac_sc} are those described by the core RBAC model proposed in $\backslash$cite\{ANSI\_INCITS\_359\_2004\}. The same reasoning applies for ``\( \queries \) only defines one query...''}. \( \queries \) only defines one query \( (\function{canDo}, \user, \angular{\operation, \file}) \) that indicate whether user \texttt{u} has access to resource \texttt{f} with permission \texttt{op} and the entailment \( \entailment \) is implements as \[ \entailment( \angular{\users, \roles, \files, \urassignement, \frassignement}, \canDoQ) = \\ \exists \role \in \roles : (\user, \role) \in \urassignement \land (\role, \angular{\operation, \file}) \in \frassignement \]
+
+% \stefanonote{The symbol ``FR'' for denoting the set of role-permission assignments is standard/defined somewhere in a paper? Usually, for that set I see that people use the symbol ``PA''} \simonenote{No, non è un simbolo standard, l'ho aggiunto io per poter usare \( \prassignement \) per l'assegnamento dei predicati. Semplicemente trovavo questi nomi più autoesplicativi}
+
+\standardtable{|l|l|}{\label{tab:rbac_sc} The \( \scrules \) Of \gls{rbac}}{
+	\twocols{\tabletitle{State-change rules}}
+	{\tabletitle{New state}}
+	\twocols{\( \addUserF \)}
+	{\( \angular{\users \cup \setof{\user}, \roles, \files, \urassignement, \frassignement} \) }
+	\twocols{\( \deleteUserF \)}
+	{\( \angular{\users \setminus \setof{\user}, \roles, \files, \urassignement, \frassignement} \)}
+	\twocols{\( \addRoleF \)}
+	{\( \angular{\users, \roles \cup \setof{\role}, \files, \urassignement, \frassignement} \)}
+	\twocols{\( \deleteRoleF \)}
+	{\( \angular{\users, \roles \setminus \setof{\role}, \files, \urassignement, \frassignement} \)}
+	\twocols{\( \addResourceF \)}
+	{\( \angular{\users, \roles, \files \cup \setof{\file}, \urassignement, \frassignement} \)}
+	\twocols{\( \deleteResourceF \)}
+	{\( \angular{\users, \roles, \files \setminus \setof{\file}, \urassignement, \frassignement} \)}
+	\twocols{\( \assignUserToRoleF \)}
+	{\( \angular{\users, \roles, \files, \urassignement \cup \setof{(\user, \role)}, \frassignement} \)}
+	\twocols{\( \revokeUserFromRoleF \)}
+	{\( \angular{\users, \roles, \files, \urassignement \setminus \setof{(\user, \role), \frassignement}} \)}
+	\twocols{\( \assignPermissionToRoleF \)}
+	{\( \angular{\users, \roles, \files, \urassignement, \frassignement \cup \setof{(r, \angular{\operation, \file})}} \)}
+	\twocols{\( \revokePermissionFromRoleF \)}
+	{\( \angular{\users, \roles, \files, \urassignement, \frassignement \setminus \setof{(r, \angular{\operation, \file})}} \)}
+} 
+
+

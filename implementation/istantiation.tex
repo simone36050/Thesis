@@ -1,0 +1,68 @@
+\section{Considered Security Model}
+\label{sec:hybird_istantiation}
+
+To demonstrate the functioning of our proposed \erbacwhat, we imagined a generic company and assumed its security model. Therefore, we then defined the set of predicates \( \predicates \) as:
+\begin{itemize}
+	\item \( \encFf \): indicates that the file \( \file \) needs to be encrypted;
+	\item \( \encFr \): indicates that all files to which role \( \role \) has access must be encrypted;
+	\item \( \encFu \): indicates that all files to which user \( \user \) has access must be encrypted;
+	\item \( \eagerFf \): indicates that the file \( \file \) must be re-encrypted immediately;
+	\item \( \eagerFr \): indicates that all files to which role \( \role \) has access must be re-encrypted immediately;
+	\item \( \eagerFu \): indicates that all files to which user \( \user \) has access must be re-encrypted immediately;
+	\item \( \collusionproneF \): indicates that the user \( \user \) may collude with the \gls{csp} to obtain the access to a file;
+	\item \( \cspNoEnforceF \): indicates that the \gls{csp} is not trust to protect the file \( \file \).
+\end{itemize}
+
+The entailment function resolves queries using predicates. Two helper functions, \\ \( \isEncryptionNeededFileF \) and \( \isEagerReencNeededFileF \), were defined to determine if file \( \file \) should be protected by \gls{cac} (and therefore encrypted) and when re-encryption of a file should occur in eager mode. In a real implementation, it is possible to replace a call to either of these functions with their body. The complete definition of the entailment function is shown in \Cref{fig:entailment_instantiation}. Each line of a function represents a boolean condition that must be considered in disjunction with the other lines.
+
+\pagelisting{\label{fig:entailment_instantiation}The instantiation of the entailment function \( \entailment \)}{\footnotesize}{b!}{
+	\begin{itemize}
+		\item \( \isEncryptionNeededFileF \):
+		\begin{itemize}
+			\item \( \encFf \)
+			\item \( \exists \role \in \roles : \encFr \land (\role, \twoang{-}{\file}) \in \frassignement \)
+			\item \( \exists \user \in \users, \role \in \roles : \encFu \land (\user, \role) \in \urassignement \land (\role, \twoang{-}{\file}) \in \frassignement \) 
+		\end{itemize}
+		
+		\item \( \isEagerReencNeededFileF \):
+		\begin{itemize}
+			\item \( \eagerFf \)
+			\item \( \exists \role \in \roles : \eagerFr \land (\role, \twoang{-}{\file}) \in \frassignement \)
+			\item \( \exists \user \in \users, \role \in \roles : \eagerFu \land (\user, \role) \in \urassignement \land (\role, \twoang{-}{\file}) \in \frassignement \) 
+		\end{itemize}
+		
+		\item \( \isEncryptionNeededF \):
+		\begin{itemize}
+			\item \( \isEagerReencNeededFileF \)
+		\end{itemize}
+		
+		\item \( \isEagerReencNeededOnRPF \):
+		\begin{itemize}
+			\item \( \isReencryptionNeededOnRPF \land \isEagerReencNeededFileF \)
+		\end{itemize}
+		
+	\end{itemize}
+}{
+	\begin{itemize}
+		\item \( \isEagerReencNeededOnRURF \):
+		\begin{itemize}
+			\item \( \isReencryptionNeededOnRURF \land \isEagerReencNeededFileF \)
+		\end{itemize}
+		
+		\item \( \isReencryptionNeededOnRURF \):
+		\begin{itemize}
+			\item \( \isEncryptionNeededFileF \land \cspNoEnforceF \land (\exists \user' \in \users : \collusionprone(\user') \land \canDo(\user', \twoang{-}{\file})) \)
+		\end{itemize}
+		
+		\item \( \isRoleKeyRotationNeededOnRURF \):
+		\begin{itemize}
+			\item \( \collusionproneF \land (\user, \role) \in \urassignement \)
+		\end{itemize}
+		
+		\item \( \isReencryptionNeededOnRPF \):
+		\begin{itemize}
+			\item \( \isEncryptionNeededFileF \land \cspNoEnforceF \land (\exists \user \in \users : \collusionproneF \land \canDo(\user, \twoang{\opread}{\file})) \)
+		\end{itemize}
+		
+	\end{itemize}
+}
